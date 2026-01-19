@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+openai
+llama-parse
+faiss-cpu
+python-multipart
+python-dotenv
+llama-index
+llama-index-llms-openai
+llama-index-embeddings-openai
+python-docx
