@@ -1,5 +1,6 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse, FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 import os
 import uuid
 import json
@@ -18,6 +19,15 @@ from typing import List, Dict
 load_dotenv()
 
 app = FastAPI(title="AI Infusion for BA", description="POC for enhancing BRD quality with AI")
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Initialize clients
 llama_parse = LlamaParse(api_key=os.getenv("LLAMA_CLOUD_API_KEY"))
