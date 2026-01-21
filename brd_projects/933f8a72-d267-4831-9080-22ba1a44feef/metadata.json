@@ -9,5 +9,18 @@
     }
   ],
   "name": "First BRD",
-  "created_at": "2026-01-19T11:59:16.566852"
+  "created_at": "2026-01-19T11:59:16.566852",
+  "brds": [
+    {
+      "id": "6fa26c6f-82e3-41f1-84ca-a9ea9144ab68",
+      "filename": "BRD_20260120_085800_6fa26c6f.docx",
+      "file_path": "brd_projects\\933f8a72-d267-4831-9080-22ba1a44feef\\brds\\BRD_20260120_085800_6fa26c6f.docx",
+      "generated_at": "2026-01-20T09:00:08.691625",
+      "requirements": "Generate an extensive Business requirement document for the uploaded document",
+      "input_document_ids": [
+        "9eaaa7b3-29ff-4fb2-a709-6d08c0d1a503"
+      ],
+      "document_count": 1
+    }
+  ]
 }

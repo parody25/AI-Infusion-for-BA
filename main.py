@@ -90,13 +90,17 @@ def get_project_path(project_id: str) -> str:
     return os.path.join(PROJECTS_DIR, project_id)
 
 def load_project_metadata(project_id: str) -> Dict:
-    """Load project metadata including document list."""
+    """Load project metadata including document and BRD lists."""
     project_path = get_project_path(project_id)
     metadata_path = os.path.join(project_path, "metadata.json")
     if os.path.exists(metadata_path):
         with open(metadata_path, 'r') as f:
-            return json.load(f)
-    return {"documents": []}
+            metadata = json.load(f)
+            # Ensure brds array exists for backward compatibility
+            if "brds" not in metadata:
+                metadata["brds"] = []
+            return metadata
+    return {"documents": [], "brds": []}
 
 def save_project_metadata(project_id: str, metadata: Dict):
     """Save project metadata."""
@@ -145,6 +149,7 @@ async def list_projects():
                 "project_id": item,
                 "name": metadata.get("name"),
                 "document_count": len(metadata.get("documents", [])),
+                "brd_count": len(metadata.get("brds", [])),
                 "created_at": metadata.get("created_at")
             })
 
@@ -297,7 +302,7 @@ async def delete_project_document(project_id: str, document_id: str):
 
 @app.post("/projects/{project_id}/generate_brd")
 async def generate_brd_for_project(project_id: str, requirements: str):
-    """Generate BRD for a specific project and return filled Word document."""
+    """Generate BRD for a specific project, store it in the project, and return metadata."""
     print(f"DEBUG: Starting BRD generation for project {project_id}")
     print(f"DEBUG: Requirements: {requirements}")
 
@@ -312,14 +317,17 @@ async def generate_brd_for_project(project_id: str, requirements: str):
 
     print(f"DEBUG: Found {len(metadata['documents'])} documents in project")
 
-    # Collect all embedding paths for this project
+    # Collect all embedding paths and document IDs for this project
     embedding_paths = []
+    input_document_ids = []
     for doc in metadata["documents"]:
         embedding_path = doc.get("embedding_path")
         if embedding_path and os.path.exists(embedding_path):
             embedding_paths.append(embedding_path)
+            input_document_ids.append(doc["id"])
 
     print(f"DEBUG: Found {len(embedding_paths)} valid embedding paths")
+    print(f"DEBUG: Input document IDs: {input_document_ids}")
 
     if not embedding_paths:
         raise HTTPException(status_code=500, detail="No valid embeddings found for project")
@@ -363,23 +371,133 @@ async def generate_brd_for_project(project_id: str, requirements: str):
 
     print("DEBUG: Calling BRD service to generate content")
 
+    # Create BRDs directory in project
+    brds_dir = os.path.join(project_path, "brds")
+    os.makedirs(brds_dir, exist_ok=True)
+
+    # Generate unique BRD ID and filename
+    brd_id = str(uuid.uuid4())
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    output_filename = f"BRD_{timestamp}_{brd_id[:8]}.docx"
+    output_path = os.path.join(brds_dir, output_filename)
+
     # Generate and fill Word document
-    output_filename = f"BRD_{project_id}.docx"
     filled_path = brd_service.generate_brd_word(
         requirements=requirements,
         context=context,
         template_path="BRD_Template.docx",
-        output_path=output_filename
+        output_path=output_path
     )
 
     print(f"DEBUG: BRD generated successfully at {filled_path}")
 
-    # Return the file for download
+    # Record BRD in project metadata
+    brd_info = {
+        "id": brd_id,
+        "filename": output_filename,
+        "file_path": output_path,
+        "generated_at": datetime.now().isoformat(),
+        "requirements": requirements,
+        "input_document_ids": input_document_ids,
+        "document_count": len(input_document_ids)
+    }
+
+    metadata["brds"].append(brd_info)
+    save_project_metadata(project_id, metadata)
+
+    print(f"DEBUG: BRD recorded in metadata: {brd_id}")
+
+    return JSONResponse(content={
+        "message": "BRD generated and stored successfully",
+        "brd_id": brd_id,
+        "filename": output_filename,
+        "input_documents_used": len(input_document_ids),
+        "generated_at": brd_info["generated_at"]
+    })
+
+@app.get("/projects/{project_id}/brds")
+async def list_project_brds(project_id: str):
+    """List all BRDs generated for a project."""
+    project_path = get_project_path(project_id)
+    if not os.path.exists(project_path):
+        raise HTTPException(status_code=404, detail="BRD project not found")
+
+    metadata = load_project_metadata(project_id)
+    brds = metadata.get("brds", [])
+
+    # Add document filenames for better UX
+    documents = metadata.get("documents", [])
+    doc_id_to_filename = {doc["id"]: doc["filename"] for doc in documents}
+
+    for brd in brds:
+        input_doc_filenames = []
+        for doc_id in brd.get("input_document_ids", []):
+            filename = doc_id_to_filename.get(doc_id, f"Unknown (ID: {doc_id})")
+            input_doc_filenames.append(filename)
+        brd["input_document_filenames"] = input_doc_filenames
+
+    return JSONResponse(content={"brds": brds})
+
+@app.get("/projects/{project_id}/brds/{brd_id}/download")
+async def download_project_brd(project_id: str, brd_id: str):
+    """Download a specific BRD from a project."""
+    project_path = get_project_path(project_id)
+    if not os.path.exists(project_path):
+        raise HTTPException(status_code=404, detail="BRD project not found")
+
+    metadata = load_project_metadata(project_id)
+    brds = metadata.get("brds", [])
+
+    # Find the BRD
+    brd_info = None
+    for brd in brds:
+        if brd["id"] == brd_id:
+            brd_info = brd
+            break
+
+    if not brd_info:
+        raise HTTPException(status_code=404, detail="BRD not found in project")
+
+    file_path = brd_info["file_path"]
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="BRD file not found on disk")
+
     return FileResponse(
-        path=filled_path,
-        filename=output_filename,
+        path=file_path,
+        filename=brd_info["filename"],
         media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     )
+
+@app.delete("/projects/{project_id}/brds/{brd_id}")
+async def delete_project_brd(project_id: str, brd_id: str):
+    """Delete a BRD from a project."""
+    project_path = get_project_path(project_id)
+    if not os.path.exists(project_path):
+        raise HTTPException(status_code=404, detail="BRD project not found")
+
+    metadata = load_project_metadata(project_id)
+    brds = metadata.get("brds", [])
+
+    # Find and remove BRD from metadata
+    brd_to_remove = None
+    for brd in brds:
+        if brd["id"] == brd_id:
+            brd_to_remove = brd
+            break
+
+    if not brd_to_remove:
+        raise HTTPException(status_code=404, detail="BRD not found in project")
+
+    # Remove the file if it exists
+    file_path = brd_to_remove.get("file_path")
+    if file_path and os.path.exists(file_path):
+        os.remove(file_path)
+
+    # Remove from metadata
+    metadata["brds"].remove(brd_to_remove)
+    save_project_metadata(project_id, metadata)
+
+    return JSONResponse(content={"message": "BRD deleted successfully"})
 
 @app.get("/brd_template")
 async def get_brd_template():
