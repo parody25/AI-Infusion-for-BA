@@ -1,5 +1,90 @@
 {
-  "documents": [],
+  "documents": [
+    {
+      "id": "05dbc8ec-f800-497b-8e16-22cd51e82682",
+      "filename": "CBUAE Circular.pdf",
+      "uploaded_at": "2026-01-23T06:49:36.999997",
+      "type": "business_document",
+      "embedding_path": "brd_projects\\dbd4d286-38e3-4aec-89a6-6bcec5f85505\\embeddings\\CBUAE Circular.pdf_embeddings"
+    },
+    {
+      "id": "9a11e1dd-b5b4-43b1-8026-728216a45a86",
+      "filename": "jaywan-the-uae-s-first-domestic-card-scheme.pdf",
+      "uploaded_at": "2026-01-23T06:50:00.162943",
+      "type": "business_document",
+      "embedding_path": "brd_projects\\dbd4d286-38e3-4aec-89a6-6bcec5f85505\\embeddings\\jaywan-the-uae-s-first-domestic-card-scheme.pdf_embeddings"
+    },
+    {
+      "id": "44eac59f-e76c-4abc-b1ca-4f571cbb4043",
+      "filename": "MOM 1.eml",
+      "uploaded_at": "2026-01-23T06:50:20.752339",
+      "type": "business_document",
+      "embedding_path": "brd_projects\\dbd4d286-38e3-4aec-89a6-6bcec5f85505\\embeddings\\MOM 1.eml_embeddings"
+    },
+    {
+      "id": "c3ff8490-a48b-48af-abdf-336511d64752",
+      "filename": "Objective and High-level Briefing Document.docx",
+      "uploaded_at": "2026-01-23T06:50:33.429263",
+      "type": "business_document",
+      "embedding_path": "brd_projects\\dbd4d286-38e3-4aec-89a6-6bcec5f85505\\embeddings\\Objective and High-level Briefing Document.docx_embeddings"
+    },
+    {
+      "id": "0d46aba4-127b-4411-be95-570afc01d56c",
+      "filename": "Physical_Card_Configuration Document.pdf",
+      "uploaded_at": "2026-01-23T06:52:53.197729",
+      "type": "business_document",
+      "embedding_path": "brd_projects\\dbd4d286-38e3-4aec-89a6-6bcec5f85505\\embeddings\\Physical_Card_Configuration Document.pdf_embeddings"
+    },
+    {
+      "id": "bb2870bc-58bd-44e5-83a4-4080530d25a6",
+      "filename": "Re MOM 2 & Summary.eml",
+      "uploaded_at": "2026-01-23T06:53:21.272288",
+      "type": "business_document",
+      "embedding_path": "brd_projects\\dbd4d286-38e3-4aec-89a6-6bcec5f85505\\embeddings\\Re MOM 2 & Summary.eml_embeddings"
+    },
+    {
+      "id": "856e8e43-173a-4bb0-a632-df345857d8bd",
+      "filename": "Re MOM 3 & Summary.eml",
+      "uploaded_at": "2026-01-23T06:53:49.087803",
+      "type": "business_document",
+      "embedding_path": "brd_projects\\dbd4d286-38e3-4aec-89a6-6bcec5f85505\\embeddings\\Re MOM 3 & Summary.eml_embeddings"
+    },
+    {
+      "id": "6594ad7b-6c74-406d-8642-da381f75d2bb",
+      "filename": "Transcript 1.txt",
+      "uploaded_at": "2026-01-23T06:54:21.228144",
+      "type": "business_document",
+      "embedding_path": "brd_projects\\dbd4d286-38e3-4aec-89a6-6bcec5f85505\\embeddings\\Transcript 1.txt_embeddings"
+    },
+    {
+      "id": "ef45cc33-0e92-4577-aa0c-c5b89340315f",
+      "filename": "Transcript 2.txt",
+      "uploaded_at": "2026-01-23T06:54:54.853858",
+      "type": "business_document",
+      "embedding_path": "brd_projects\\dbd4d286-38e3-4aec-89a6-6bcec5f85505\\embeddings\\Transcript 2.txt_embeddings"
+    }
+  ],
   "name": "CB UAE Jaywan",
-  "created_at": "2026-01-20T13:59:38.783681"
+  "created_at": "2026-01-20T13:59:38.783681",
+  "brds": [
+    {
+      "id": "9c6f7b8e-52df-4f3b-a359-d48c65c5b861",
+      "filename": "BRD_20260123_065625_9c6f7b8e.docx",
+      "file_path": "brd_projects\\dbd4d286-38e3-4aec-89a6-6bcec5f85505\\brds\\BRD_20260123_065625_9c6f7b8e.docx",
+      "generated_at": "2026-01-23T06:58:00.851341",
+      "requirements": "Generate an extensive BRD with the uploaded document",
+      "input_document_ids": [
+        "05dbc8ec-f800-497b-8e16-22cd51e82682",
+        "9a11e1dd-b5b4-43b1-8026-728216a45a86",
+        "44eac59f-e76c-4abc-b1ca-4f571cbb4043",
+        "c3ff8490-a48b-48af-abdf-336511d64752",
+        "0d46aba4-127b-4411-be95-570afc01d56c",
+        "bb2870bc-58bd-44e5-83a4-4080530d25a6",
+        "856e8e43-173a-4bb0-a632-df345857d8bd",
+        "6594ad7b-6c74-406d-8642-da381f75d2bb",
+        "ef45cc33-0e92-4577-aa0c-c5b89340315f"
+      ],
+      "document_count": 9
+    }
+  ]
 }
