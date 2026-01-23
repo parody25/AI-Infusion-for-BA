@@ -85,6 +85,101 @@
         "ef45cc33-0e92-4577-aa0c-c5b89340315f"
       ],
       "document_count": 9
+    },
+    {
+      "id": "fa8b012d-7703-4a61-a80f-ad712e165989",
+      "filename": "BRD_20260123_082617_fa8b012d.docx",
+      "file_path": "brd_projects\\dbd4d286-38e3-4aec-89a6-6bcec5f85505\\brds\\BRD_20260123_082617_fa8b012d.docx",
+      "generated_at": "2026-01-23T08:28:45.388353",
+      "requirements": "Generate extensive business requirement document for the uploaded documents",
+      "input_document_ids": [
+        "05dbc8ec-f800-497b-8e16-22cd51e82682",
+        "9a11e1dd-b5b4-43b1-8026-728216a45a86",
+        "44eac59f-e76c-4abc-b1ca-4f571cbb4043",
+        "c3ff8490-a48b-48af-abdf-336511d64752",
+        "0d46aba4-127b-4411-be95-570afc01d56c",
+        "bb2870bc-58bd-44e5-83a4-4080530d25a6",
+        "856e8e43-173a-4bb0-a632-df345857d8bd",
+        "6594ad7b-6c74-406d-8642-da381f75d2bb",
+        "ef45cc33-0e92-4577-aa0c-c5b89340315f"
+      ],
+      "document_count": 9
+    },
+    {
+      "id": "2ea10fa3-eaaf-4474-a76c-04bf2a5c9515",
+      "filename": "BRD_20260123_090448_2ea10fa3.docx",
+      "file_path": "brd_projects\\dbd4d286-38e3-4aec-89a6-6bcec5f85505\\brds\\BRD_20260123_090448_2ea10fa3.docx",
+      "generated_at": "2026-01-23T09:07:40.814007",
+      "requirements": "Generate an extensive Business requirement document for the uploaded context",
+      "input_document_ids": [
+        "05dbc8ec-f800-497b-8e16-22cd51e82682",
+        "9a11e1dd-b5b4-43b1-8026-728216a45a86",
+        "44eac59f-e76c-4abc-b1ca-4f571cbb4043",
+        "c3ff8490-a48b-48af-abdf-336511d64752",
+        "0d46aba4-127b-4411-be95-570afc01d56c",
+        "bb2870bc-58bd-44e5-83a4-4080530d25a6",
+        "856e8e43-173a-4bb0-a632-df345857d8bd",
+        "6594ad7b-6c74-406d-8642-da381f75d2bb",
+        "ef45cc33-0e92-4577-aa0c-c5b89340315f"
+      ],
+      "document_count": 9
+    },
+    {
+      "id": "6998b5ca-bbf3-425c-93e1-19c244e21d5b",
+      "filename": "BRD_20260123_092211_6998b5ca.docx",
+      "file_path": "brd_projects\\dbd4d286-38e3-4aec-89a6-6bcec5f85505\\brds\\BRD_20260123_092211_6998b5ca.docx",
+      "generated_at": "2026-01-23T09:25:06.388134",
+      "requirements": "Generate an extensive BRD for the uploaded document",
+      "input_document_ids": [
+        "05dbc8ec-f800-497b-8e16-22cd51e82682",
+        "9a11e1dd-b5b4-43b1-8026-728216a45a86",
+        "44eac59f-e76c-4abc-b1ca-4f571cbb4043",
+        "c3ff8490-a48b-48af-abdf-336511d64752",
+        "0d46aba4-127b-4411-be95-570afc01d56c",
+        "bb2870bc-58bd-44e5-83a4-4080530d25a6",
+        "856e8e43-173a-4bb0-a632-df345857d8bd",
+        "6594ad7b-6c74-406d-8642-da381f75d2bb",
+        "ef45cc33-0e92-4577-aa0c-c5b89340315f"
+      ],
+      "document_count": 9
+    },
+    {
+      "id": "fb010837-7c1e-468c-ace9-3b5e3dbfac09",
+      "filename": "BRD_20260123_115635_fb010837.docx",
+      "file_path": "brd_projects\\dbd4d286-38e3-4aec-89a6-6bcec5f85505\\brds\\BRD_20260123_115635_fb010837.docx",
+      "generated_at": "2026-01-23T11:58:42.305630",
+      "requirements": "Generate an extensive BRD for the uploaded document",
+      "input_document_ids": [
+        "05dbc8ec-f800-497b-8e16-22cd51e82682",
+        "9a11e1dd-b5b4-43b1-8026-728216a45a86",
+        "44eac59f-e76c-4abc-b1ca-4f571cbb4043",
+        "c3ff8490-a48b-48af-abdf-336511d64752",
+        "0d46aba4-127b-4411-be95-570afc01d56c",
+        "bb2870bc-58bd-44e5-83a4-4080530d25a6",
+        "856e8e43-173a-4bb0-a632-df345857d8bd",
+        "6594ad7b-6c74-406d-8642-da381f75d2bb",
+        "ef45cc33-0e92-4577-aa0c-c5b89340315f"
+      ],
+      "document_count": 9
+    },
+    {
+      "id": "78307d82-2d82-4c71-8e86-b03f0aeb97a4",
+      "filename": "BRD_20260123_124235_78307d82.docx",
+      "file_path": "brd_projects\\dbd4d286-38e3-4aec-89a6-6bcec5f85505\\brds\\BRD_20260123_124235_78307d82.docx",
+      "generated_at": "2026-01-23T12:44:49.029092",
+      "requirements": "Generate extensive business requirement document for the uploaded document",
+      "input_document_ids": [
+        "05dbc8ec-f800-497b-8e16-22cd51e82682",
+        "9a11e1dd-b5b4-43b1-8026-728216a45a86",
+        "44eac59f-e76c-4abc-b1ca-4f571cbb4043",
+        "c3ff8490-a48b-48af-abdf-336511d64752",
+        "0d46aba4-127b-4411-be95-570afc01d56c",
+        "bb2870bc-58bd-44e5-83a4-4080530d25a6",
+        "856e8e43-173a-4bb0-a632-df345857d8bd",
+        "6594ad7b-6c74-406d-8642-da381f75d2bb",
+        "ef45cc33-0e92-4577-aa0c-c5b89340315f"
+      ],
+      "document_count": 9
     }
   ]
 }

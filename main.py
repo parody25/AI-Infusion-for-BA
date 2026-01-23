@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Body
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import os
@@ -15,6 +15,9 @@ from llama_index.core import VectorStoreIndex, load_index_from_storage, StorageC
 from llama_index.core.node_parser import MarkdownElementNodeParser
 from services.openai_brd_service import OpenAIBRDService
 from typing import List, Dict
+from email import policy
+from email.parser import BytesParser
+from brd_schema import BRD_SCHEMA_JSON_STRING
 
 load_dotenv()
 
@@ -43,44 +46,108 @@ brd_service = OpenAIBRDService()
 # Directory for storing BRD projects
 PROJECTS_DIR = "brd_projects"
 
-# Dummy BRD Template with placeholders
+# Dummy BRD Template with placeholders (First Islamic Bank format - matches JSON schema)
 BRD_TEMPLATE = """
-# Business Requirements Document (BRD)
+# First Islamic Bank - Business Requirements Specification
 
-## 1. Introduction
-{introduction}
+## Title: {title_main}
+## ID: {id}
+## Program: {program}
+## Type: {type}
 
-## 2. Business Objectives
-{business_objectives}
+## Overview
+{overview}
 
-## 3. Scope
-### In-Scope
+## Current Constraints
+{current_constraint}
+
+## Objective
+{objective}
+
+## In Scope
 {in_scope}
 
-### Out-of-Scope
+## Out of Scope
 {out_of_scope}
 
-## 4. Business Requirements
-{business_requirements}
+## Business Requirements
+REQ ID: {req_id_bs}
+Title: {title_bs}
+Description: {description}
+AS IS Behavior: {as_is_behaviour}
+TO BE Behavior: {to_be_behaviour}
+Pre-requisite: {pre_requisite}
+Acceptance Criteria: {acceptance_criteria}
+Alternate Flows: {alternate_flows}
 
-## 5. Functional Requirements
-{functional_requirements}
+## Reference Documents
+{reference_documents}
 
-## 6. Non-Functional Requirements
-{non_functional_requirements}
+## Requirement Traceability Matrix
+REQ ID: {req_id}
+Description: {description}
+Source Channel: {source_channel}
+Impacted System: {impacted_system}
+Outcome: {outcome}
 
-## 7. Assumptions & Constraints
-{assumptions_constraints}
-
-## 8. Risks & Dependencies
-{risks_dependencies}
-
-## 9. Acceptance Criteria
-{acceptance_criteria}
-
-## 10. Open Questions
-{open_questions}
+## Non-Functional Requirements
+No. of users: {no_of_users}
+Peak Volume: {peak_volume}
+Monthly Volume: {monthly_volume}
+Availability: {availability}
+Impact on Operational Process: {impact_on_operational_process}
+Regulatory Impact: {regulatory_impact}
+Reports Requirement: {reports_requirement}
+Access Requirement: {access_requirement}
+Security Requirement: {secureity_requirement}
+Data Requirement: {date_requirement}
+Training Requirement: {training_requirement}
 """
+
+def parse_eml(file_path: str) -> str:
+    """
+    Parse .eml file to extract clean text content from email bodies.
+    Prefers text/plain over text/html, strips MIME headers and formatting.
+    """
+    try:
+        with open(file_path, "rb") as f:
+            msg = BytesParser(policy=policy.default).parse(f)
+
+        parts = []
+
+        for part in msg.walk():
+            content_type = part.get_content_type()
+
+            if content_type == "text/plain":
+                text = part.get_payload(decode=True)
+                if text:
+                    charset = part.get_content_charset() or "utf-8"
+                    parts.append(text.decode(charset, errors="ignore"))
+
+            elif content_type == "text/html" and not parts:
+                # Only use HTML if no plain text found
+                html = part.get_payload(decode=True)
+                if html:
+                    charset = part.get_content_charset() or "utf-8"
+                    # Basic HTML tag stripping for HTML fallback
+                    import re
+                    html_text = html.decode(charset, errors="ignore")
+                    # Remove basic HTML tags
+                    clean_text = re.sub(r'<[^>]+>', '', html_text)
+                    # Decode HTML entities
+                    import html
+                    clean_text = html.unescape(clean_text)
+                    parts.append(clean_text)
+
+        return "\n".join(parts).strip()
+    except Exception as e:
+        print(f"ERROR: Failed to parse .eml file {file_path}: {e}")
+        # Fallback to plain text reading
+        try:
+            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                return f.read().strip()
+        except:
+            return ""
 
 if not os.path.exists(PROJECTS_DIR):
     os.makedirs(PROJECTS_DIR)
@@ -185,7 +252,7 @@ async def upload_document_to_project(project_id: str, file: UploadFile = File(..
         print(f"DEBUG: Processing {file_name} for project {project_id}")
         print(f"DEBUG: Embeddings file path: {embeddings_file}")
 
-        if file_extension.lower() in ['.pdf', '.docx', '.xlsx']:
+        if file_extension.lower() in ['.pdf', '.docx', '.xlsx', '.txt', '.eml']:
             try:
                 # Check if embeddings exist and are compatible
                 recreate_embeddings = True
@@ -211,10 +278,32 @@ async def upload_document_to_project(project_id: str, file: UploadFile = File(..
                     # Create new embeddings using LlamaIndex
                     print(f"DEBUG: Creating new embeddings for {file_name}")
 
+                    # Special handling for .eml files - parse MIME content first
+                    processing_file_path = temp_file_path
+                    if file_extension.lower() == '.eml':
+                        print(f"DEBUG: Parsing .eml file content for clean text extraction")
+                        clean_text = parse_eml(temp_file_path)
+                        if clean_text.strip():
+                            # Create a temporary text file with clean content
+                            import tempfile as tmp
+                            with tmp.NamedTemporaryFile(mode='w', suffix='.txt', delete=False, encoding='utf-8') as clean_file:
+                                clean_file.write(clean_text)
+                                processing_file_path = clean_file.name
+                            print(f"DEBUG: Created clean text file for .eml processing: {len(clean_text)} characters")
+                        else:
+                            print(f"WARNING: Failed to extract clean text from .eml file, using original")
+
                     # Use LlamaParse with markdown result type for better structure
                     llama_parser = LlamaParse(result_type="markdown", api_key=os.getenv("LLAMA_CLOUD_API_KEY"))
-                    documents = llama_parser.load_data(temp_file_path)
+                    documents = llama_parser.load_data(processing_file_path)
                     print(f"DEBUG: Parsed {len(documents)} documents from {file_name}")
+
+                    # Clean up temporary text file if created for .eml
+                    if file_extension.lower() == '.eml' and processing_file_path != temp_file_path:
+                        try:
+                            os.unlink(processing_file_path)
+                        except:
+                            pass
 
                     # Use MarkdownElementNodeParser for better multimodal support
                     node_parser = MarkdownElementNodeParser(llm=llm, num_workers=4)  # Reduced workers for stability
@@ -255,7 +344,7 @@ async def upload_document_to_project(project_id: str, file: UploadFile = File(..
                 traceback.print_exc()
                 raise HTTPException(status_code=500, detail=f"Error processing document: {str(e)}")
         else:
-            raise HTTPException(status_code=400, detail="Unsupported file type. Only PDF, DOCX, and XLSX are supported.")
+            raise HTTPException(status_code=400, detail="Unsupported file type. Only PDF, DOCX, XLSX, TXT, and EML are supported.")
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing upload: {str(e)}")
@@ -300,6 +389,55 @@ async def delete_project_document(project_id: str, document_id: str):
 
     return JSONResponse(content={"message": "Document deleted successfully"})
 
+@app.delete("/projects/{project_id}")
+async def delete_project(project_id: str):
+    """Delete an entire BRD project and all its associated data."""
+    project_path = get_project_path(project_id)
+    if not os.path.exists(project_path):
+        raise HTTPException(status_code=404, detail="BRD project not found")
+
+    try:
+        # Delete the entire project directory and all contents
+        # This includes: metadata.json, embeddings/, brds/, all documents and BRDs
+        import shutil
+        shutil.rmtree(project_path)
+        print(f"DEBUG: Successfully deleted project directory: {project_path}")
+
+        return JSONResponse(content={"message": "Project deleted successfully"})
+
+    except Exception as e:
+        print(f"ERROR: Failed to delete project {project_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to delete project: {str(e)}")
+
+@app.put("/projects/{project_id}")
+async def rename_project(project_id: str, request_data: Dict[str, str] = Body(...)):
+    """Rename a BRD project."""
+    project_path = get_project_path(project_id)
+    if not os.path.exists(project_path):
+        raise HTTPException(status_code=404, detail="BRD project not found")
+
+    new_name = request_data.get("name", "").strip()
+    if not new_name:
+        raise HTTPException(status_code=400, detail="Project name cannot be empty")
+
+    try:
+        # Load current metadata
+        metadata = load_project_metadata(project_id)
+
+        # Update the name
+        metadata["name"] = new_name
+
+        # Save updated metadata
+        save_project_metadata(project_id, metadata)
+
+        print(f"DEBUG: Successfully renamed project {project_id} to '{new_name}'")
+
+        return JSONResponse(content={"message": "Project renamed successfully"})
+
+    except Exception as e:
+        print(f"ERROR: Failed to rename project {project_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to rename project: {str(e)}")
+
 @app.post("/projects/{project_id}/generate_brd")
 async def generate_brd_for_project(project_id: str, requirements: str):
     """Generate BRD for a specific project, store it in the project, and return metadata."""
@@ -342,7 +480,7 @@ async def generate_brd_for_project(project_id: str, requirements: str):
             print(f"DEBUG: Successfully loaded index")
 
             # Get nodes from index
-            retriever = index.as_retriever(similarity_top_k=10)
+            retriever = index.as_retriever(similarity_top_k=15)
             nodes = retriever.retrieve(requirements)
             print(f"DEBUG: Retrieved {len(nodes)} nodes from {embedding_path}")
             combined_nodes.extend(nodes)
@@ -385,6 +523,7 @@ async def generate_brd_for_project(project_id: str, requirements: str):
     filled_path = brd_service.generate_brd_word(
         requirements=requirements,
         context=context,
+        schema_json=BRD_SCHEMA_JSON_STRING,
         template_path="BRD_Template.docx",
         output_path=output_path
     )
