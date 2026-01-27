@@ -5,13 +5,11 @@ BRD_SCHEMA_JSON_STRING = """{
     "id": "",
     "program": "",
     "type": "",
-    "table_of_contents": [],
     "overview": "",
     "current_constraint": "",
     "objective": "",
     "in_scope": "",
-    "out_of_scope": "",
-    "reference_documents": ""
+    "out_of_scope": ""
   },
 
   "business_requirements": [
@@ -23,7 +21,8 @@ BRD_SCHEMA_JSON_STRING = """{
       "to_be_behaviour": "",
       "pre_requisite": "",
       "acceptance_criteria": "",
-      "alternate_flows": ""
+      "alternate_flows": "",
+      "reference_documents": ""
     }
   ],
 
