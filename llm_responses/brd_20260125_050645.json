@@ -1,0 +1,250 @@
+{
+  "document": {
+    "title_main": "Business Requirements Specification for Jaywan Domestic Card Scheme Enablement and Co‑Badged Card Issuance",
+    "id": "BRS-JAYWAN-COBADGE-001",
+    "program": "Jaywan Domestic Card Scheme Adoption – Licensed Financial Institutions (LFIs)",
+    "type": "Business Requirements Specification",
+    "table_of_contents": [
+      "1. Introduction",
+      "2. Background and Regulatory Context",
+      "3. Objectives",
+      "4. Scope and Constraints",
+      "5. Business Requirements",
+      "6. Functional and Channel Requirements",
+      "7. Operational and Reconciliation Requirements",
+      "8. Reporting Requirements",
+      "9. Non-Functional Requirements",
+      "10. Regulatory and Compliance Requirements",
+      "11. Security and Data Requirements",
+      "12. Training and Change Management",
+      "13. Traceability Matrix"
+    ],
+    "overview": "This Business Requirements Specification defines the business, functional and high-level non-functional requirements for complying with the Central Bank of the UAE (CBUAE) mandate for adoption of the Jaywan domestic card scheme by Licensed Financial Institutions (LFIs). The document covers issuance and processing of Jaywan mono-badged cards for domestic and GCC usage and Jaywan co-badged cards in partnership with international payment schemes (e.g. Visa, Mastercard) for both domestic and international usage. The requirements address enablement of domestic routing through Jaywan for UAE domestic transactions, support for GCC usage where applicable, and interoperability with international schemes for cross-border transactions. The document also addresses high-level requirements for support of tokenised transactions (e.g. Samsung Wallet, Google Pay, Apple Pay), dual messaging models (existing Visa DMS and CBUAE DMS to-be), and alignment with Al Etihad Payments (AEP) guidelines and CBUAE circulars classified as Public.",
+    "current_constraint": "The current environment processes card transactions predominantly through international schemes such as Visa and Mastercard, using existing dual messaging models for e-commerce and tokenisation transactions. Jaywan scheme rules, domestic routing preferences, and CBUAE DMS processes for e-commerce and tokenised transactions are not yet fully implemented. The financial institution is constrained by partial clarity on detailed AEP operating rules, reconciliation specifications, and final bilateral arrangements with external jurisdictions (e.g. India and other countries) which are targeted for mid-2025. Existing POS tokenised transaction flows may not yet be aligned with CBUAE DMS and Jaywan routing requirements. Current reporting and reconciliation processes are based on international schemes and may require adaptation once complete Jaywan documentation, including original reports and reconciliation specifications, is received from CBUAE/AEP.",
+    "objective": "The primary objective is to ensure full and timely compliance with the CBUAE circular and related mandates (including the central bank mandate reference number 5480-2024, as referenced) that require all Licensed Financial Institutions to: (1) issue Jaywan mono-badged cards for domestic and GCC usage as per AEP and CBUAE guidelines; (2) issue Jaywan co-badged cards with Visa or Mastercard that support both domestic (Jaywan) and international (Visa/Mastercard) transactions; (3) configure card routing rules so that domestic transactions are processed via the Jaywan domestic scheme in alignment with regulatory expectations on cost efficiency, financial sovereignty and digital payments strategy; and (4) progressively support tokenised usage of Jaywan on Samsung Wallet, and subsequently on Google Pay and Apple Pay, in accordance with AEP readiness and bilateral agreements. The objective includes ensuring that business processes, system changes, and operational controls are suitably defined to enable a secure, seamless, and cost-efficient payment experience that meets CBUAE and AEP requirements.",
+    "in_scope": "Design and definition of business requirements necessary for: (1) issuance and lifecycle management of Jaywan mono-badged cards for domestic and GCC usage; (2) issuance and lifecycle management of Jaywan co-badged cards in partnership with Visa or Mastercard for domestic and international usage; (3) configuration of routing logic to ensure that eligible domestic UAE transactions shall be processed through Jaywan; (4) alignment of existing dual messaging processes with CBUAE DMS for e-commerce and tokenised transactions; (5) inclusion of POS tokenised transactions within the Jaywan and CBUAE DMS scope, subject to confirmation; (6) high-level reporting and reconciliation requirements aligned to CBUAE/AEP original reports; (7) capturing questions and clarifications to be raised with AEP; (8) definition of operational impacts on Card Operations, GBO-ATM/CDM and other relevant units as discussed in discovery and clarification sessions.",
+    "out_of_scope": "Detailed technical solution design, application architecture and low-level interface specifications with AEP and international schemes are out of scope. Scheme rule drafting for AEP or CBUAE is out of scope. Pricing, interchange, and commercial negotiations with schemes or partners are out of scope. Detailed configuration of Samsung Wallet, Google Pay and Apple Pay by wallet providers is out of scope beyond business requirements for enablement. Detailed bilateral agreement content with India or other countries is out of scope; only business readiness requirements for supporting such agreements are in scope. Any non-card payment products and non-Jaywan related enhancements are out of scope.",
+    "reference_documents": "CBUAE Circular on Jaywan Domestic Card Scheme (Public Classification) including mandate for Jaywan co-badged card issuance; CBUAE mandate reference number 5480-2024 regarding support for domestic and international transactions; AEP communication on Jaywan launch readiness (27 February 2025); AEP public material titled “Jaywan: UAE's First Domestic Card Scheme Introduced to Strengthen the UAE's Position as a Global Hub for Digital Payments”; internal process documentation for current SMS (ATM, POS), current Visa DMS (Visa e-commerce and tokenisation transactions), and to-be CBUAE DMS (for e-commerce and tokenisation transactions); meeting minutes and discovery session documentation involving Business, IT, Card Operations, GBO-ATM/CDM, Finance and other stakeholders; original report shared by CBUAE for reporting and reconciliation."
+  },
+  "business_requirements": [
+    {
+      "req_id_bs": "BR-001",
+      "title_bs": "Issuance of Jaywan Mono-Badged Cards for Domestic and GCC Usage",
+      "description_bs": "The Licensed Financial Institution shall enable issuance of Jaywan mono-badged cards to eligible customers for domestic UAE and GCC usage, in line with CBUAE and AEP guidelines.",
+      "as_is_behaviour": "Currently, the institution predominantly issues cards under international schemes (e.g. Visa, Mastercard) for domestic and international usage. A dedicated Jaywan mono-badged card product for domestic and GCC usage is not yet available.",
+      "to_be_behaviour": "The institution shall define, configure and launch one or more Jaywan mono-badged card products, ensuring support for domestic UAE transactions via the Jaywan scheme and GCC usage as permitted by AEP rules. Card issuance, lifecycle management (issuance, renewal, replacement, blocking, and closure) and customer servicing processes shall be updated to include Jaywan mono-badged cards.",
+      "pre_requisite": "Finalisation of Jaywan scheme participation agreement with AEP; receipt of relevant AEP product and operating guidelines; completion of internal product approval processes.",
+      "acceptance_criteria": "Jaywan mono-badged card products shall be visible in the product catalogue and shall be issuable through all relevant channels (e.g. branches, digital onboarding channels) for eligible customers. Test transactions for domestic UAE and permitted GCC merchants shall be successfully authorised, cleared and settled via Jaywan in accordance with scheme rules.",
+      "alternate_flows": "If a customer is not eligible or the segment is not supported for Jaywan mono-badged cards, the system shall prevent issuance and shall provide appropriate advisory messages as per product eligibility rules. If GCC acceptance is not available for a specific merchant or country, the transaction shall be declined with a suitable response code as per scheme rules."
+    },
+    {
+      "req_id_bs": "BR-002",
+      "title_bs": "Issuance of Jaywan Co-Badged Cards with International Schemes",
+      "description_bs": "The Licensed Financial Institution shall issue Jaywan co-badged cards in partnership with Visa or Mastercard, in compliance with the CBUAE circular requiring co-badged cards that support both domestic and international transactions.",
+      "as_is_behaviour": "Existing cards are typically single-badged under Visa or Mastercard. Domestic and international transactions are both routed via the respective international scheme, and there is no co-badged card carrying both Jaywan and an international scheme.",
+      "to_be_behaviour": "The institution shall introduce Jaywan co-badged card products co-branded with Visa or Mastercard. Domestic UAE transactions shall be processed using the Jaywan domestic scheme, while international transactions shall be processed using the corresponding international scheme. Card issuance processes, plastic/digital card design, BIN ranges and scheme configuration shall support co-badging as per CBUAE and scheme rules.",
+      "pre_requisite": "CBUAE circular and mandate confirmation for co-badging; co-badged BIN and product approval from AEP and the selected international scheme; updated card manufacturing and personalisation specifications.",
+      "acceptance_criteria": "Co-badged cards shall be successfully issued and shall transact domestically via Jaywan and internationally via the relevant international scheme in test and pilot modes. Behaviour shall be validated across POS, ATM, e-commerce and tokenised channels where applicable. The cardholder experience shall remain seamless without requiring manual scheme selection for standard use cases.",
+      "alternate_flows": "If network preference routing cannot be applied due to technical constraints at a specific terminal or acquirer, the transaction shall follow fallback rules as agreed between AEP, international scheme and the institution, while ensuring compliance with CBUAE guidance on domestic routing where technically feasible."
+    },
+    {
+      "req_id_bs": "BR-003",
+      "title_bs": "Domestic Transaction Routing via Jaywan",
+      "description_bs": "The card processing environment shall be configured such that eligible domestic UAE transactions for Jaywan mono-badged and co-badged cards shall be routed via the Jaywan domestic scheme.",
+      "as_is_behaviour": "Domestic transactions for existing Visa and Mastercard cards are routed via their respective international schemes based on existing routing logic. No domestic routing preference for Jaywan is implemented.",
+      "to_be_behaviour": "Routing rules shall be updated so that, for Jaywan mono-badged and co-badged cards, transactions originating from UAE merchants and ATMs classified as domestic shall be routed via Jaywan. The card management and switch systems shall recognise Jaywan BINs and routing indicators and shall enforce routing preferences in line with CBUAE and AEP expectations to reduce domestic payment costs.",
+      "pre_requisite": "Definition of domestic vs international transaction criteria (e.g. merchant country code, terminal country code, acquirer country); receipt of routing specifications from AEP; switch and host configuration capabilities.",
+      "acceptance_criteria": "Test scenarios for domestic transactions across ATM, POS and e-commerce shall demonstrate that Jaywan is selected as the primary route. Routing logs and scheme reports shall confirm domestic usage through Jaywan. Exceptions and fallbacks shall be documented and approved.",
+      "alternate_flows": "If the Jaywan scheme is temporarily unavailable, the system shall follow approved fallback routing rules (where allowed by CBUAE and scheme regulations) or shall decline the transaction with appropriate messaging. Any fallback to international schemes for domestic transactions shall be logged and monitored."
+    },
+    {
+      "req_id_bs": "BR-004",
+      "title_bs": "Support for Dual Messaging Models Including CBUAE DMS",
+      "description_bs": "The institution shall align its business processes to support dual messaging for card transactions, including the current Visa DMS and the to-be CBUAE DMS for e-commerce and tokenised transactions.",
+      "as_is_behaviour": "Current processes support SMS for ATM and POS and Visa DMS for Visa e-commerce and tokenisation transactions. CBUAE DMS processes for e-commerce and tokenised transactions are documented at a high level but are not yet fully implemented.",
+      "to_be_behaviour": "Business processes and associated requirements shall be updated to include CBUAE DMS flows for relevant Jaywan e-commerce and tokenised transactions, complementing existing Visa DMS for international scheme transactions. Roles and responsibilities of Card Operations, GBO-ATM/CDM and related teams shall be updated accordingly.",
+      "pre_requisite": "Availability of CBUAE DMS specifications; completion of internal process flow documentation; agreement between Business and IT on end-to-end process steps.",
+      "acceptance_criteria": "Process documentation shall clearly show current and to-be flows including CBUAE DMS. Test scenarios shall confirm that e-commerce and tokenised Jaywan transactions follow the defined dual messaging flows with correct authorisation and clearing behaviour.",
+      "alternate_flows": "If CBUAE DMS is not yet live for a particular transaction category, the transaction shall follow the interim agreed process (e.g. SMS or international DMS) as per CBUAE and AEP guidance until full DMS enablement is in place."
+    },
+    {
+      "req_id_bs": "BR-005",
+      "title_bs": "Inclusion of POS Tokenised Transactions in Scope",
+      "description_bs": "POS tokenised transactions for Jaywan mono-badged and co-badged cards shall be considered in scope for the Jaywan and CBUAE DMS adoption, subject to clarification with stakeholders and AEP.",
+      "as_is_behaviour": "POS tokenised transactions are primarily handled under existing Visa and Mastercard tokenisation frameworks and are not explicitly covered under Jaywan and CBUAE DMS processes.",
+      "to_be_behaviour": "The institution shall define business requirements for processing POS tokenised transactions for Jaywan cards, including routing, authorisation, clearing and chargeback handling, such that they are consistent with CBUAE and AEP guidance. Scope confirmation shall be obtained during discovery sessions.",
+      "pre_requisite": "Confirmation from Business, IT and AEP on inclusion of POS tokenised transactions; availability of tokenisation and wallet integration guidelines for Jaywan.",
+      "acceptance_criteria": "Scope documentation shall explicitly state the inclusion of POS tokenised transactions. Once enabled, successful POS tokenised Jaywan transactions shall be processed according to defined flows and shall be visible in reports and reconciliations.",
+      "alternate_flows": "If POS tokenised transactions are deferred to a later phase, they shall be documented as out of current phase scope with clear interim handling rules using existing international scheme tokenisation arrangements where applicable."
+    },
+    {
+      "req_id_bs": "BR-006",
+      "title_bs": "Support for Digital Wallets (Samsung Wallet, Google Pay, Apple Pay)",
+      "description_bs": "Jaywan cards shall be enabled for use in supported digital wallets, starting with Samsung Wallet and extending to Google Pay and Apple Pay in subsequent phases, in accordance with AEP plans.",
+      "as_is_behaviour": "Existing Visa and Mastercard cards may be enabled for various wallets. Jaywan cards are not yet widely supported across digital wallets.",
+      "to_be_behaviour": "The institution shall define and support business requirements for provisioning Jaywan cards into Samsung Wallet and, as AEP readiness matures, into Google Pay and Apple Pay. The customer journey shall allow seamless token provisioning, lifecycle events (suspend, resume, delete) and usage for contactless and in-app payments in line with scheme and CBUAE security requirements.",
+      "pre_requisite": "Confirmation from AEP on wallet readiness and integration approach; receipt of wallet participation requirements; internal approval to participate in each wallet program.",
+      "acceptance_criteria": "Eligible Jaywan cards shall be successfully provisioned to supported wallets in test and production environments. Transactions conducted via wallets shall authorise and clear correctly and shall be distinguishable for reporting and reconciliation.",
+      "alternate_flows": "If a specific wallet (e.g. Apple Pay or Google Pay) is not yet supported for Jaywan, the channel shall not offer Jaywan provisioning and shall provide clear messaging to customers where required."
+    },
+    {
+      "req_id_bs": "BR-007",
+      "title_bs": "Reversals, Refunds and Chargebacks for Jaywan Transactions",
+      "description_bs": "The institution shall define and implement business rules and processes for reversals, refunds and chargebacks specific to Jaywan mono-badged and co-badged card transactions.",
+      "as_is_behaviour": "Existing reversals, refunds and chargeback processes are aligned with international scheme rules (e.g. Visa, Mastercard) and do not explicitly cover Jaywan-specific rules.",
+      "to_be_behaviour": "Reversal, refund and chargeback handling for Jaywan transactions shall be defined and documented, including timelines, evidence requirements, customer communication, and financial accounting treatment, ensuring consistency with CBUAE consumer protection expectations and AEP scheme rules. Co-badged cards shall follow Jaywan rules for domestic transactions and international scheme rules for cross-border transactions, as applicable.",
+      "pre_requisite": "Availability of Jaywan dispute and chargeback rules from AEP; alignment between Operations, Legal, Compliance and Finance teams.",
+      "acceptance_criteria": "Operational teams shall demonstrate adherence to documented Jaywan dispute processes through test cases and sample production cases after go-live. Reversals, refunds and chargebacks shall be correctly reflected in GLs and customer statements.",
+      "alternate_flows": "If a dispute relates to an international leg of a co-badged card transaction, the process shall follow the applicable international scheme’s rules while ensuring local regulatory requirements are also met."
+    },
+    {
+      "req_id_bs": "BR-008",
+      "title_bs": "General Ledger (GL) and Reconciliation Requirements for Jaywan",
+      "description_bs": "The institution shall establish GL structures and reconciliation processes to support Jaywan mono-badged and co-badged card transactions in alignment with CBUAE and AEP reports.",
+      "as_is_behaviour": "GL accounts and reconciliation processes are primarily set up for international scheme transactions. Initial GL details for Jaywan have been prepared based on Finance team confirmation, but reconciliation documentation specific to Jaywan is incomplete.",
+      "to_be_behaviour": "Specific GL accounts for Jaywan scheme fees, interchange, settlements, chargebacks and related items shall be maintained as per Finance guidance. Reconciliation processes shall utilise original reports provided by CBUAE/AEP to ensure that settlement positions and balances for Jaywan are accurately reconciled on a daily and periodic basis.",
+      "pre_requisite": "Finalisation of GL mappings by Finance; receipt of original CBUAE/AEP reports and reconciliation specifications; clarification from AEP as needed.",
+      "acceptance_criteria": "Reconciliation reports shall balance to scheme settlement reports for Jaywan. GL postings shall be accurate and traceable. Finance shall sign off on reconciliations performed over an agreed pilot period.",
+      "alternate_flows": "If a specific report from CBUAE/AEP is delayed, interim reconciliations using available data shall be performed, with differences tracked and adjusted once final reports are available."
+    },
+    {
+      "req_id_bs": "BR-009",
+      "title_bs": "Reporting Requirements Aligned to CBUAE and AEP",
+      "description_bs": "The institution shall produce internal and regulatory-aligned reports for Jaywan usage and performance, leveraging original reports received from CBUAE and AEP.",
+      "as_is_behaviour": "Existing reports focus mainly on Visa and Mastercard volumes, revenues and disputes. Jaywan-specific reporting templates and regulatory periodic reporting requirements are not fully defined.",
+      "to_be_behaviour": "Business requirements shall define key reporting needs for Jaywan, including volumes, values, channel breakdown (ATM, POS, e-commerce, tokenised), domestic vs GCC/international splits, and exceptions. Where applicable, reports shall meet any CBUAE or AEP reporting obligations and support internal monitoring of Jaywan adoption and performance.",
+      "pre_requisite": "Receipt of CBUAE original reports and any formal reporting templates; confirmation of minimum data fields required by regulators; alignment between Business, Finance, Compliance and IT reporting teams.",
+      "acceptance_criteria": "Reports shall be generated with accurate Jaywan data and shall reconcile with scheme and GL figures. Regulatory reports, if required, shall be submitted in the prescribed format and frequency.",
+      "alternate_flows": "If specific regulatory reporting formats are not yet published, the institution shall maintain internal management information reports with key Jaywan metrics, ready for adaptation once formal templates are provided."
+    },
+    {
+      "req_id_bs": "BR-010",
+      "title_bs": "Stakeholder Discovery and Clarification with AEP",
+      "description_bs": "The institution shall conduct structured discovery sessions and submit formal queries to AEP to clarify Jaywan mono-badged and co-badged card requirements.",
+      "as_is_behaviour": "Initial meetings between Business, IT, Card Operations, GBO-ATM/CDM and other stakeholders have been held, and several queries have been identified for AEP but not all are resolved.",
+      "to_be_behaviour": "Discovery sessions shall be scheduled and executed as per the planned timetable to capture additional functional, operational and reporting requirements. All open queries to AEP shall be catalogued, tracked and responded to, and outcomes shall be incorporated into the finalised business requirements and process documentation.",
+      "pre_requisite": "Agreement on meeting schedules, agenda and attendees including Business, IT, Operations and Finance; availability of AEP contact points for query resolution.",
+      "acceptance_criteria": "Minutes of discovery sessions shall be documented and approved by stakeholders. A query log to AEP shall show closure or agreed follow-ups for a defined percentage of queries prior to design finalisation.",
+      "alternate_flows": "If AEP clarification is delayed, assumptions shall be documented, risk assessed and validated with Compliance, with subsequent updates made once clarifications are received."
+    },
+    {
+      "req_id_bs": "BR-011",
+      "title_bs": "Compliance with CBUAE Circulars and Public Classification Requirements",
+      "description_bs": "All Jaywan-related activities shall comply with CBUAE circulars, including mandates on co-badged card issuance and information classification requirements (Public).",
+      "as_is_behaviour": "The institution complies with general CBUAE regulations for cards, but Jaywan-specific mandates and information classification nuances are newly introduced and still being embedded.",
+      "to_be_behaviour": "The institution shall ensure that product design, customer communication, operational processes and data handling for Jaywan conform to the CBUAE circular including the requirement that all licensed financial institutions must launch Jaywan co-badged cards. Documentation labelled as CBUAE Classification: Public shall be handled and shared according to applicable internal information security policies.",
+      "pre_requisite": "Receipt and internal dissemination of the relevant CBUAE circulars and classifications; review by Legal, Compliance and Information Security functions.",
+      "acceptance_criteria": "Compliance and Legal shall confirm that Jaywan products and processes adhere to CBUAE directives. No material non-compliance findings should be raised in internal or regulatory reviews relating to Jaywan card issuance and data handling.",
+      "alternate_flows": "If any ambiguity exists in the interpretation of a CBUAE circular, the institution shall seek written clarification from CBUAE or AEP and apply conservative interim controls until clarified."
+    },
+    {
+      "req_id_bs": "BR-012",
+      "title_bs": "Customer Awareness and Communication Alignment",
+      "description_bs": "The institution shall align its customer communication and awareness efforts on Jaywan with AEP’s planned awareness campaign and key messages.",
+      "as_is_behaviour": "Customer communication focuses on existing card propositions and does not yet include comprehensive information on Jaywan features and benefits.",
+      "to_be_behaviour": "In coordination with AEP’s awareness campaign planned from April 2025, the institution shall define business requirements for customer communication on Jaywan products, including features, benefits, domestic and international usage rules for co-badged cards, and any changes to existing cards. Communications shall be clear and compliant with CBUAE consumer protection guidelines.",
+      "pre_requisite": "Availability of AEP campaign materials and key messages; alignment with internal Marketing and Compliance units.",
+      "acceptance_criteria": "Customer-facing materials (website, brochures, digital app content) shall clearly describe Jaywan card propositions and shall be approved by Compliance and Marketing. Feedback from customer channels shall be monitored for clarity and issue identification.",
+      "alternate_flows": "If AEP adjusts campaign timelines, the institution shall adapt its communication schedule while maintaining regulatory and customer transparency obligations."
+    }
+  ],
+  "traceability_matrix": [
+    {
+      "req_id_tm": "BR-001",
+      "description_tm": "Issuance of Jaywan mono-badged cards for domestic and GCC usage",
+      "source_channel": "Branch, Online Banking, Mobile Banking, Card Operations Back Office",
+      "impacted_system": "Card Management System, Switch, Core Banking, CRM",
+      "outcome": "Enable customers to obtain Jaywan mono-badged cards compliant with CBUAE and AEP requirements."
+    },
+    {
+      "req_id_tm": "BR-002",
+      "description_tm": "Issuance of Jaywan co-badged cards with Visa or Mastercard",
+      "source_channel": "Branch, Online Banking, Mobile Banking, Card Operations Back Office",
+      "impacted_system": "Card Management System, Switch, Card Personalisation, Core Banking, CRM",
+      "outcome": "Provide co-badged cards supporting domestic Jaywan and international scheme usage as mandated by CBUAE."
+    },
+    {
+      "req_id_tm": "BR-003",
+      "description_tm": "Domestic transaction routing via Jaywan",
+      "source_channel": "ATM, POS, E-commerce Gateway, Mobile Wallet",
+      "impacted_system": "Switch, Card Management System, Authorisation Engine, Network Gateways",
+      "outcome": "Ensure domestic UAE transactions for Jaywan cards are routed through Jaywan to optimise cost and sovereignty."
+    },
+    {
+      "req_id_tm": "BR-004",
+      "description_tm": "Support for dual messaging models including CBUAE DMS",
+      "source_channel": "E-commerce Gateway, Tokenisation Platforms, Back Office Operations",
+      "impacted_system": "Switch, Authorisation and Clearing Systems, Settlement Engine",
+      "outcome": "Align transaction flows for e-commerce and tokenised transactions with CBUAE DMS and existing Visa DMS."
+    },
+    {
+      "req_id_tm": "BR-005",
+      "description_tm": "Inclusion of POS tokenised transactions in Jaywan scope",
+      "source_channel": "POS Terminals, Mobile Wallets",
+      "impacted_system": "Switch, Tokenisation Platform, Card Management System",
+      "outcome": "Extend Jaywan support to POS tokenised transactions subject to scheme confirmation."
+    },
+    {
+      "req_id_tm": "BR-006",
+      "description_tm": "Support for Samsung Wallet, Google Pay and Apple Pay",
+      "source_channel": "Mobile Wallet Applications",
+      "impacted_system": "Tokenisation Platform, Wallet Integration Layer, Card Management System",
+      "outcome": "Allow Jaywan cardholders to transact securely via supported digital wallets."
+    },
+    {
+      "req_id_tm": "BR-007",
+      "description_tm": "Reversals, refunds and chargebacks for Jaywan transactions",
+      "source_channel": "Contact Centre, Branch, Dispute Management Portal",
+      "impacted_system": "Dispute Management System, Card Management System, Core Banking, GL",
+      "outcome": "Provide compliant dispute resolution processes for Jaywan mono-badged and co-badged transactions."
+    },
+    {
+      "req_id_tm": "BR-008",
+      "description_tm": "GL and reconciliation requirements for Jaywan",
+      "source_channel": "Finance Operations, Settlement Processing",
+      "impacted_system": "GL, Reconciliation Tool, Settlement Engine",
+      "outcome": "Ensure accurate financial accounting and reconciliation of Jaywan settlements in line with CBUAE/AEP reports."
+    },
+    {
+      "req_id_tm": "BR-009",
+      "description_tm": "Reporting requirements aligned to CBUAE and AEP",
+      "source_channel": "MIS, Regulatory Reporting, Business Analytics",
+      "impacted_system": "Data Warehouse, Reporting Tools, GL, Card Data Mart",
+      "outcome": "Provide management and regulatory visibility over Jaywan card performance and compliance metrics."
+    },
+    {
+      "req_id_tm": "BR-010",
+      "description_tm": "Stakeholder discovery sessions and AEP clarification",
+      "source_channel": "Workshops, Meetings, Email Communications",
+      "impacted_system": "Requirement Repository, Project Management Tools",
+      "outcome": "Refine and finalise Jaywan business requirements based on multi-stakeholder and AEP inputs."
+    },
+    {
+      "req_id_tm": "BR-011",
+      "description_tm": "Compliance with CBUAE circulars and classification requirements",
+      "source_channel": "Regulatory Circulars, Compliance Reviews",
+      "impacted_system": "Policy Management Systems, Document Repositories",
+      "outcome": "Maintain regulatory-compliant Jaywan implementation and information handling as per CBUAE Public classification."
+    },
+    {
+      "req_id_tm": "BR-012",
+      "description_tm": "Customer awareness and communication alignment",
+      "source_channel": "Marketing Channels, Digital Banking, Branch Collateral",
+      "impacted_system": "Website CMS, Mobile Banking App, CRM",
+      "outcome": "Educate customers on Jaywan products and usage in alignment with AEP campaigns and CBUAE guidelines."
+    }
+  ],
+  "non_functional_requirements": {
+    "no_of_users": "The solution shall support the full base of existing and new card customers of the institution who are eligible for Jaywan mono-badged and co-badged cards, with headroom for future growth as per the institution’s card portfolio strategy.",
+    "peak_volume": "The solution shall support peak-hour transaction volumes for domestic and international card usage, including ATM, POS, e-commerce and tokenised transactions, at least equivalent to existing Visa/Mastercard peak volumes for the institution for comparable products.",
+    "monthly_volume": "The solution shall support monthly transaction volumes for Jaywan transactions that are at least on par with, and scalable beyond, current domestic card volumes processed via international schemes, in line with projected migration and adoption rates.",
+    "availability": "Jaywan-related card processing, including authorisation, routing and critical customer servicing, shall target high availability suitable for retail payments in the UAE, aligned with the institution’s existing card system SLAs and any CBUAE expectations for critical payment infrastructure."
+  },
+  "impact_on_operational_process": "Operational processes across Card Operations, GBO-ATM/CDM, Dispute Management, Finance and Customer Service shall be updated to incorporate Jaywan mono-badged and co-badged card handling. New workflows shall be defined for Jaywan-specific issuance, routing exceptions, reversals, refunds and chargebacks. ATM and POS support processes shall include Jaywan-specific monitoring and incident handling. Finance operations shall integrate new GL accounts and reconciliation routines based on original CBUAE/AEP reports. Operational runbooks shall be updated to reflect dual messaging (Visa DMS and CBUAE DMS) and tokenised transaction handling for Jaywan.",
+  "regulatory_impact": "The implementation is directly driven by CBUAE mandates requiring licensed financial institutions to launch Jaywan co-badged cards and support domestic routing for Jaywan transactions. Compliance with the CBUAE circular, including reference number 5480-2024 relating to domestic and international support, is mandatory. Additional regulatory considerations include adherence to CBUAE consumer protection standards, data protection rules, and classification requirements for documents marked as CBUAE Classification: Public. Non-compliance may result in regulatory findings, penalties or mandated remediation.",
+  "reports_requirement": "Reports shall be defined to cover transaction volumes, values, scheme distribution (Jaywan vs international), channel usage (ATM, POS, e-commerce, tokenised), domestic vs GCC/international splits, fee and interchange analysis, dispute statistics and reconciliation status. Where CBUAE or AEP prescribe specific reporting templates and frequencies, these shall be adopted. Reports shall leverage original CBUAE/AEP reports and shall support Finance, Operations, Risk, Compliance and Business stakeholders in monitoring Jaywan adoption, performance and exceptions.",
+  "access_requirement": "Access to Jaywan-related configuration, transaction data, reports and documents shall be restricted to authorised personnel in line with the institution’s access control policies and CBUAE expectations. Role-based access controls shall be defined for Business, IT, Operations, Finance, Risk and Compliance users. Access to CBUAE Classification: Public documents shall be granted as required for business purposes while ensuring adherence to internal information security standards.",
+  "security_requirement": "Jaywan card issuance and processing shall comply with applicable security standards, including card data protection, encryption of sensitive data in transit and at rest, and secure tokenisation for digital wallets. Authentication and authorisation mechanisms shall be consistent with CBUAE cyber security expectations and scheme security requirements. Any integration with Samsung Wallet, Google Pay and Apple Pay shall meet the security requirements of those wallets and AEP, ensuring secure provisioning and usage of tokens.",
+  "data_requirement": "The institution shall capture and maintain all data elements required to process Jaywan mono-badged and co-badged card transactions, including BIN identifiers, scheme indicators, routing preferences, tokenisation identifiers, and fields required for reporting and reconciliation. Data quality controls shall be established to ensure accuracy of domestic vs international classification, channel identification and scheme attribution. Data retention shall comply with CBUAE regulations and internal policies.",
+  "training_requirement": "Relevant staff across Business, Card Operations, GBO-ATM/CDM, Customer Service, Finance, IT Support and Compliance shall receive training on Jaywan scheme fundamentals, product features, process changes, dispute handling and reporting. Training materials shall reflect CBUAE and AEP guidelines and shall be updated as regulations or scheme rules evolve. Frontline staff shall be able to explain Jaywan mono-badged and co-badged propositions and usage rules to customers clearly and accurately."
+}
