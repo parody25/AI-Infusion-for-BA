@@ -111,7 +111,6 @@ CRITICAL RULES:
         except json.JSONDecodeError as e:
             raise RuntimeError(f"Invalid JSON from GPT: {e}\n\n{raw}")
 
-        # Persist JSON for audit/debug
         os.makedirs("llm_responses", exist_ok=True)
         with open(
             f"llm_responses/brd_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
@@ -129,48 +128,38 @@ CRITICAL RULES:
     def fill_word_template(self, data: Dict, template_path: str, output_path: str) -> str:
         doc = Document(template_path)
 
-        # 1. POPULATE DYNAMIC TABLES FIRST
-        # This ensures we use the "clean" template with placeholders still intact.
-
-        # ---------- BUSINESS REQUIREMENTS TABLE ----------
+        # ---------- DYNAMIC TABLES ----------
         try:
-            # Search for the table containing the specific placeholder
             br_table = self._find_table_by_placeholder(doc, "{req_id_bs}")
-            if "business_requirements" in data and isinstance(data["business_requirements"], list):
+            if isinstance(data.get("business_requirements"), list):
                 self._populate_business_requirements(doc, br_table, data["business_requirements"])
         except RuntimeError as e:
             print(f"WARNING: Business requirements table not found: {e}")
 
-        # ---------- TRACEABILITY MATRIX ----------
         try:
             tm_table = self._find_table_by_placeholder(doc, "{req_id_tm}")
-            if "traceability_matrix" in data and isinstance(data["traceability_matrix"], list):
+            if isinstance(data.get("traceability_matrix"), list):
                 self._populate_traceability(doc, tm_table, data["traceability_matrix"])
         except RuntimeError as e:
             print(f"WARNING: Traceability matrix table not found: {e}")
 
-        # ---------- TABLE OF CONTENTS ----------
         try:
-            # Look for the specific placeholder you added: {serial_number}
-            # Or fall back to finding "Table Of Content" string in headers
             try:
                 toc_table = self._find_table_by_placeholder(doc, "{serial_number}")
             except RuntimeError:
                 toc_table = self._find_table(doc, "Table Of Content")
-            
+
             self._populate_table_of_contents(toc_table)
         except RuntimeError:
-            print("WARNING: TOC table not found via placeholder {serial_number} or header 'Table Of Content'.")
+            print("WARNING: TOC table not found.")
 
-        # ---------- NON-FUNCTIONAL REQUIREMENTS ----------
         try:
             nfr_table = self._find_table_by_placeholder(doc, "{no_of_users}")
             self._populate_nfr(nfr_table, data)
         except RuntimeError as e:
-            print(f"WARNING: Non-functional requirements table not found: {e}")
+            print(f"WARNING: NFR table not found: {e}")
 
-        # 2. PERFORM GLOBAL PLACEHOLDER REPLACEMENT LAST
-        # Now we replace document-level fields (title, id, overview) everywhere else.
+        # ---------- SAFE PLACEHOLDER REPLACEMENT ----------
         flattened_data = self._get_flattened_data(data)
 
         def replace_text(text: str) -> str:
@@ -181,17 +170,25 @@ CRITICAL RULES:
             return text
 
         for p in doc.paragraphs:
-            p.text = replace_text(p.text)
+            self._replace_text_in_runs(p, replace_text)
 
-        # Handle remaining tables (NFR may have already been processed above)
         for table in doc.tables:
             for row in table.rows:
                 for cell in row.cells:
                     for para in cell.paragraphs:
-                        para.text = replace_text(para.text)
+                        self._replace_text_in_runs(para, replace_text)
 
         doc.save(output_path)
         return output_path
+
+    # ------------------------------------------------------------------
+    # FORMAT-SAFE RUN REPLACEMENT (FIX)
+    # ------------------------------------------------------------------
+
+    def _replace_text_in_runs(self, paragraph, replace_fn):
+        for run in paragraph.runs:
+            if run.text:
+                run.text = replace_fn(run.text)
 
     # ------------------------------------------------------------------
     # TABLE HELPERS
@@ -199,13 +196,11 @@ CRITICAL RULES:
 
     def _find_table(self, doc, keyword: str):
         for table in doc.tables:
-            if table.rows and len(table.rows[0].cells) > 0:
-                if keyword.lower() in table.rows[0].cells[0].text.lower():
-                    return table
+            if table.rows and keyword.lower() in table.rows[0].cells[0].text.lower():
+                return table
         raise RuntimeError(f"Table not found: {keyword}")
 
     def _find_table_by_placeholder(self, doc, placeholder: str):
-        """Finds a table that contains the specific placeholder string."""
         for table in doc.tables:
             for row in table.rows:
                 for cell in row.cells:
@@ -214,162 +209,97 @@ CRITICAL RULES:
         raise RuntimeError(f"Table with placeholder '{placeholder}' not found")
 
     def _duplicate_table_after(self, base_table, parent_doc):
-        """
-        Creates a deep copy of a table, inserts a spacer paragraph after the original,
-        and then inserts the new table after the spacer.
-        Returns the new Table object.
-        """
         new_tbl_xml = deepcopy(base_table._tbl)
         parent = base_table._tbl.getparent()
 
-        # Create spacer
         spacer_p = parent_doc.add_paragraph()
         spacer_p._p.getparent().remove(spacer_p._p)
 
-        # Insert after base table
         base_table._tbl.addnext(spacer_p._p)
         spacer_p._p.addnext(new_tbl_xml)
 
-        # Return new Table object wrapped in the same parent as the original
         return Table(new_tbl_xml, base_table._parent)
 
     def _populate_business_requirements(self, doc, base_table, items):
-        """Populate business requirements using robust cloning."""
-        print(f"DEBUG: Populating business requirements with {len(items)} items")
-
-        # We use 'current_table' to track where we are inserting.
-        # Initially, it's the base template table.
         current_table = base_table
 
         for idx, req in enumerate(items):
-            if idx == 0:
-                # First item goes into the existing template table
-                target_table = base_table
-            else:
-                # Subsequent items get a new cloned table inserted AFTER the current one
-                target_table = self._duplicate_table_after(current_table, doc)
-                # Update current_table so the next loop inserts after THIS one
-                current_table = target_table
+            target_table = base_table if idx == 0 else self._duplicate_table_after(current_table, doc)
+            current_table = target_table
 
-            # Populate the data
-            try:
-                target_table.cell(0, 1).text = str(req.get("req_id_bs", ""))
-                target_table.cell(1, 1).text = str(req.get("title_bs", ""))
-                target_table.cell(2, 1).text = str(req.get("description_bs", ""))
-                target_table.cell(3, 1).text = str(req.get("as_is_behaviour", ""))
-                target_table.cell(4, 1).text = str(req.get("to_be_behaviour", ""))
-                target_table.cell(5, 1).text = str(req.get("pre_requisite", ""))
-                target_table.cell(6, 1).text = str(req.get("acceptance_criteria", ""))
-                target_table.cell(7, 1).text = str(req.get("alternate_flows", ""))
-                target_table.cell(7, 1).text = str(req.get("reference_documents", ""))
-            except IndexError:
-                print(f"WARNING: Table structure mismatch for item {idx}")
-
-        print(f"DEBUG: Successfully created {len(items)} business requirements tables")
+            target_table.cell(0, 1).text = str(req.get("req_id_bs", ""))
+            target_table.cell(1, 1).text = str(req.get("title_bs", ""))
+            target_table.cell(2, 1).text = str(req.get("description_bs", ""))
+            target_table.cell(3, 1).text = str(req.get("as_is_behaviour", ""))
+            target_table.cell(4, 1).text = str(req.get("to_be_behaviour", ""))
+            target_table.cell(5, 1).text = str(req.get("pre_requisite", ""))
+            target_table.cell(6, 1).text = str(req.get("acceptance_criteria", ""))
+            target_table.cell(7, 1).text = str(req.get("alternate_flows", ""))
+            target_table.cell(8, 1).text = str(req.get("reference_documents", ""))
 
     def _populate_traceability(self, doc, base_table, items):
-        """Populate traceability matrix using robust cloning."""
-        print(f"DEBUG: Populating traceability matrix with {len(items)} items")
-
         current_table = base_table
 
         for idx, trace_item in enumerate(items):
-            if idx == 0:
-                target_table = base_table
-            else:
-                target_table = self._duplicate_table_after(current_table, doc)
-                current_table = target_table
+            target_table = base_table if idx == 0 else self._duplicate_table_after(current_table, doc)
+            current_table = target_table
 
-            try:
-                target_table.cell(0, 1).text = str(trace_item.get("req_id_tm", ""))
-                target_table.cell(1, 1).text = str(trace_item.get("description_tm", ""))
-                target_table.cell(2, 1).text = str(trace_item.get("source_channel", ""))
-                target_table.cell(3, 1).text = str(trace_item.get("impacted_system", ""))
-                target_table.cell(4, 1).text = str(trace_item.get("outcome", ""))
-            except IndexError:
-                 print(f"WARNING: Traceability table structure mismatch for item {idx}")
-
-        print(f"DEBUG: Successfully created {len(items)} traceability matrix tables")
+            target_table.cell(0, 1).text = str(trace_item.get("req_id_tm", ""))
+            target_table.cell(1, 1).text = str(trace_item.get("description_tm", ""))
+            target_table.cell(2, 1).text = str(trace_item.get("source_channel", ""))
+            target_table.cell(3, 1).text = str(trace_item.get("impacted_system", ""))
+            target_table.cell(4, 1).text = str(trace_item.get("outcome", ""))
 
     def _populate_table_of_contents(self, table):
-        """Populate Table of Contents with the fixed schema sections."""
-        
-        # Hardcoded sections as requested
         toc_items = [
-            "Document Sign off",
-            "Document History",
-            "Overview",
-            "Current constraints",
-            "Objective",
-            "In scope",
-            "Out of scope",
-            "Description",
-            "Business Requirements",
-            "Requirement Traceability Matrix",
-            "Non-Functional Requirements",
-            "Impact on Operational Process",
-            "Regulatory Impact",
-            "Reports Requirement",
-            "Access Requirement",
-            "Security Requirement",
-            "Data Requirement",
-            "Training Requirement"
+            "Document Sign off", "Document History", "Overview", "Current constraints",
+            "Objective", "In scope", "Out of scope", "Description",
+            "Business Requirements", "Requirement Traceability Matrix",
+            "Non-Functional Requirements", "Impact on Operational Process",
+            "Regulatory Impact", "Reports Requirement", "Access Requirement",
+            "Security Requirement", "Data Requirement", "Training Requirement"
         ]
-        
-        print(f"DEBUG: Populating Table of Contents with {len(toc_items)} static entries")
 
-        # Clear existing rows but keep header
         self._clear_table_keep_header(table)
 
-        # Add a row for each TOC entry
-        for i, section_name in enumerate(toc_items, 1):
+        for i, section in enumerate(toc_items, 1):
             row = table.add_row().cells
-            # Column 0: Serial Number
-            if len(row) > 0:
-                row[0].text = str(i)
-            # Column 1: Description
-            if len(row) > 1:
-                row[1].text = section_name
-
-        print(f"DEBUG: Table of Contents now has {len(table.rows)} rows")
+            row[0].text = str(i)
+            row[1].text = section
 
     def _clear_table_keep_header(self, table):
-        """Clear all rows except the header row."""
         while len(table.rows) > 1:
             table._tbl.remove(table.rows[1]._tr)
 
     def _get_flattened_data(self, data: Dict) -> Dict:
-        """Helper to collect document-level fields for global replacement."""
         flat = {}
         if "document" in data:
             flat.update(data["document"])
 
-        # Add NFR fields to flat data for replacement in the NFR table/paragraphs
         nfr = data.get("non_functional_requirements", {})
-        if isinstance(nfr, list) and nfr: nfr = nfr[0]
-        if isinstance(nfr, dict): flat.update(nfr)
+        if isinstance(nfr, list) and nfr:
+            flat.update(nfr[0])
 
-        # Add other top-level fields
-        for key in ["impact_on_operational_process", "regulatory_impact", "reports_requirement",
-                    "access_requirement", "security_requirement", "data_requirement", "training_requirement"]:
-            if key in data: flat[key] = data[key]
+        for key in [
+            "impact_on_operational_process", "regulatory_impact",
+            "reports_requirement", "access_requirement",
+            "security_requirement", "data_requirement",
+            "training_requirement"
+        ]:
+            if key in data:
+                flat[key] = data[key]
+
         return flat
 
     def _populate_nfr(self, table, data):
-        # Handle NFR data - could be array or object
         nfr = data.get("non_functional_requirements", {})
         if isinstance(nfr, list) and nfr:
-            nfr = nfr[0] if isinstance(nfr[0], dict) else nfr
+            nfr = nfr[0]
 
-        # Populate table cells (first 4 rows)
-        if len(table.rows) >= 4:
-            table.cell(0, 1).text = str(nfr.get("no_of_users", "")) if isinstance(nfr, dict) else ""
-            table.cell(1, 1).text = str(nfr.get("peak_volume", "")) if isinstance(nfr, dict) else ""
-            table.cell(2, 1).text = str(nfr.get("monthly_volume", "")) if isinstance(nfr, dict) else ""
-            table.cell(3, 1).text = str(nfr.get("availability", "")) if isinstance(nfr, dict) else ""
-
-        # The remaining NFR fields are handled by placeholder replacement in paragraphs
-        # (impact_on_operational_process, regulatory_impact, etc.)
+        table.cell(0, 1).text = str(nfr.get("no_of_users", ""))
+        table.cell(1, 1).text = str(nfr.get("peak_volume", ""))
+        table.cell(2, 1).text = str(nfr.get("monthly_volume", ""))
+        table.cell(3, 1).text = str(nfr.get("availability", ""))
 
     # ------------------------------------------------------------------
     # ORCHESTRATOR
