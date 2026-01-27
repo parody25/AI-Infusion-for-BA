@@ -256,6 +256,25 @@
         "ef45cc33-0e92-4577-aa0c-c5b89340315f"
       ],
       "document_count": 9
+    },
+    {
+      "id": "d508544e-4b9f-40b5-af5e-45880e22b485",
+      "filename": "BRD_20260127_125318_d508544e.docx",
+      "file_path": "brd_projects\\dbd4d286-38e3-4aec-89a6-6bcec5f85505\\brds\\BRD_20260127_125318_d508544e.docx",
+      "generated_at": "2026-01-27T12:57:19.691638",
+      "requirements": "Generate an extensive Business requirement document for the uploaded content",
+      "input_document_ids": [
+        "05dbc8ec-f800-497b-8e16-22cd51e82682",
+        "9a11e1dd-b5b4-43b1-8026-728216a45a86",
+        "44eac59f-e76c-4abc-b1ca-4f571cbb4043",
+        "c3ff8490-a48b-48af-abdf-336511d64752",
+        "0d46aba4-127b-4411-be95-570afc01d56c",
+        "bb2870bc-58bd-44e5-83a4-4080530d25a6",
+        "856e8e43-173a-4bb0-a632-df345857d8bd",
+        "6594ad7b-6c74-406d-8642-da381f75d2bb",
+        "ef45cc33-0e92-4577-aa0c-c5b89340315f"
+      ],
+      "document_count": 9
     }
   ]
 }

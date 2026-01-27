@@ -1,6 +1,5 @@
 import os
 import json
-import time
 from datetime import datetime
 from typing import Dict
 from copy import deepcopy
@@ -25,7 +24,7 @@ class OpenAIBRDService:
         model: str = "gpt-5.1",
         max_output_tokens: int = 15000,
         temperature: float = 0.2,
-        timeout: int = 6000
+        timeout: int = 600
     ):
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
@@ -64,101 +63,11 @@ class OpenAIBRDService:
             "You respond ONLY in valid JSON following the provided schema."
         )
 
-    def _generate_toc_from_schema(self, schema_json: str) -> list:
-        """
-        Generate Table of Contents dynamically from the schema structure.
-        Includes all sections as specified by the user.
-        """
-        try:
-            schema = json.loads(schema_json)
-            toc_items = []
-            section_counter = 1
-
-            # Standard document sections (always included)
-            standard_sections = [
-                ("Document Sign off", "Document Sign off"),
-                ("Document History", "Document History"),
-                ("Overview", "Overview"),
-                ("Current constraints", "Current Constraints"),
-                ("Objective", "Objective"),
-                ("In scope", "In Scope"),
-                ("Out of scope", "Out of Scope")
-            ]
-
-            for description, title in standard_sections:
-                toc_items.append({
-                    "serial_number": f"{section_counter}.",
-                    "description": title
-                })
-                section_counter += 1
-
-            # Add business requirements section if present
-            if "business_requirements" in schema and isinstance(schema["business_requirements"], list):
-                toc_items.append({
-                    "serial_number": f"{section_counter}.",
-                    "description": "Business Requirements"
-                })
-                section_counter += 1
-
-            # Add traceability matrix section if present
-            if "traceability_matrix" in schema and isinstance(schema["traceability_matrix"], list):
-                toc_items.append({
-                    "serial_number": f"{section_counter}.",
-                    "description": "Requirement Traceability Matrix"
-                })
-                section_counter += 1
-
-            # Add non-functional requirements section if present
-            if "non_functional_requirements" in schema:
-                toc_items.append({
-                    "serial_number": f"{section_counter}.",
-                    "description": "Non-Functional Requirements"
-                })
-                section_counter += 1
-
-            # Add top-level sections
-            top_level_sections = [
-                "impact_on_operational_process",
-                "regulatory_impact",
-                "reports_requirement",
-                "access_requirement",
-                "security_requirement",
-                "data_requirement",
-                "training_requirement"
-            ]
-
-            section_titles = {
-                "impact_on_operational_process": "Impact on Operational Process",
-                "regulatory_impact": "Regulatory Impact",
-                "reports_requirement": "Reports Requirement",
-                "access_requirement": "Access Requirement",
-                "security_requirement": "Security Requirement",
-                "data_requirement": "Data Requirement",
-                "training_requirement": "Training Requirement"
-            }
-
-            for field_name in top_level_sections:
-                if field_name in schema:
-                    toc_items.append({
-                        "serial_number": f"{section_counter}.",
-                        "description": section_titles.get(field_name, field_name.replace("_", " ").title())
-                    })
-                    section_counter += 1
-
-            return toc_items
-
-        except json.JSONDecodeError:
-            print("WARNING: Could not parse schema JSON for TOC generation")
-            return []
-
     # ------------------------------------------------------------------
     # JSON GENERATION (SOURCE OF TRUTH)
     # ------------------------------------------------------------------
 
     def generate_brd_json(self, requirements: str, context: str, schema_json: str) -> Dict:
-        # Generate TOC dynamically from schema instead of LLM
-        toc_items = self._generate_toc_from_schema(schema_json)
-
         user_prompt = f"""
 You MUST return ONLY valid JSON matching the schema below.
 
@@ -171,9 +80,8 @@ CRITICAL RULES:
 - Use BFSI / CBUAE terminology
 - Use clear "shall" statements
 - Do NOT invent information
-- Do NOT generate table_of_contents - it will be auto-generated from schema
 
-=== REQUIREMENTS ===  
+=== REQUIREMENTS ===
 {requirements}
 
 === CONTEXT ===
@@ -183,9 +91,6 @@ CRITICAL RULES:
 {schema_json}
 """
 
-        print(f"Starting OpenAI API call with model: {self.model}")
-        start_time = time.time()
-        
         response = self.client.responses.create(
             model=self.model,
             input=[
@@ -195,10 +100,6 @@ CRITICAL RULES:
             max_output_tokens=self.max_output_tokens,
             timeout=self.timeout
         )
-        
-        end_time = time.time()
-        duration = end_time - start_time
-        print(f"OpenAI API call completed in {duration:.2f} seconds")
 
         raw = self._extract_text(response)
 
@@ -250,15 +151,16 @@ CRITICAL RULES:
 
         # ---------- TABLE OF CONTENTS ----------
         try:
-            # Find the table containing TOC placeholders
-            toc_table = self._find_table_by_placeholder(doc, "{serial_number}")
-            toc_items = data.get("document", {}).get("table_of_contents", [])
-
-            if toc_items and isinstance(toc_items, list):
-                print(f"DEBUG: Found TOC table. Populating {len(toc_items)} items.")
-                self._populate_table_of_contents(toc_table, toc_items)
-        except RuntimeError as e:
-            print(f"WARNING: Table of Contents table not found: {e}")
+            # Look for the specific placeholder you added: {serial_number}
+            # Or fall back to finding "Table Of Content" string in headers
+            try:
+                toc_table = self._find_table_by_placeholder(doc, "{serial_number}")
+            except RuntimeError:
+                toc_table = self._find_table(doc, "Table Of Content")
+            
+            self._populate_table_of_contents(toc_table)
+        except RuntimeError:
+            print("WARNING: TOC table not found via placeholder {serial_number} or header 'Table Of Content'.")
 
         # ---------- NON-FUNCTIONAL REQUIREMENTS ----------
         try:
@@ -281,7 +183,7 @@ CRITICAL RULES:
         for p in doc.paragraphs:
             p.text = replace_text(p.text)
 
-        # Handle remaining tables (TOC and NFR may have already been processed above)
+        # Handle remaining tables (NFR may have already been processed above)
         for table in doc.tables:
             for row in table.rows:
                 for cell in row.cells:
@@ -297,8 +199,9 @@ CRITICAL RULES:
 
     def _find_table(self, doc, keyword: str):
         for table in doc.tables:
-            if keyword.lower() in table.rows[0].cells[0].text.lower():
-                return table
+            if table.rows and len(table.rows[0].cells) > 0:
+                if keyword.lower() in table.rows[0].cells[0].text.lower():
+                    return table
         raise RuntimeError(f"Table not found: {keyword}")
 
     def _find_table_by_placeholder(self, doc, placeholder: str):
@@ -349,8 +252,6 @@ CRITICAL RULES:
                 current_table = target_table
 
             # Populate the data
-            # Note: Ensure your row indices match your specific template structure.
-            # Based on your BRD, it's a vertical Key-Value table.
             try:
                 target_table.cell(0, 1).text = str(req.get("req_id_bs", ""))
                 target_table.cell(1, 1).text = str(req.get("title_bs", ""))
@@ -360,7 +261,7 @@ CRITICAL RULES:
                 target_table.cell(5, 1).text = str(req.get("pre_requisite", ""))
                 target_table.cell(6, 1).text = str(req.get("acceptance_criteria", ""))
                 target_table.cell(7, 1).text = str(req.get("alternate_flows", ""))
-                target_table.cell(8, 1).text = str(req.get("reference_documents", ""))
+                target_table.cell(7, 1).text = str(req.get("reference_documents", ""))
             except IndexError:
                 print(f"WARNING: Table structure mismatch for item {idx}")
 
@@ -390,21 +291,47 @@ CRITICAL RULES:
 
         print(f"DEBUG: Successfully created {len(items)} traceability matrix tables")
 
-    def _populate_table_of_contents(self, table, toc_items):
-        """Populate Table of Contents as a table with serial_number and description columns."""
-        print(f"DEBUG: Populating Table of Contents with {len(toc_items)} entries")
+    def _populate_table_of_contents(self, table):
+        """Populate Table of Contents with the fixed schema sections."""
+        
+        # Hardcoded sections as requested
+        toc_items = [
+            "Document Sign off",
+            "Document History",
+            "Overview",
+            "Current constraints",
+            "Objective",
+            "In scope",
+            "Out of scope",
+            "Description",
+            "Business Requirements",
+            "Requirement Traceability Matrix",
+            "Non-Functional Requirements",
+            "Impact on Operational Process",
+            "Regulatory Impact",
+            "Reports Requirement",
+            "Access Requirement",
+            "Security Requirement",
+            "Data Requirement",
+            "Training Requirement"
+        ]
+        
+        print(f"DEBUG: Populating Table of Contents with {len(toc_items)} static entries")
 
-        # Clear existing rows but keep header (assuming row 0 is header)
+        # Clear existing rows but keep header
         self._clear_table_keep_header(table)
 
-        # Add a row for each TOC entry (each item is an object with serial_number and description)
-        for item in toc_items:
-            if isinstance(item, dict):
-                row = table.add_row().cells
-                row[0].text = str(item.get("serial_number", ""))
-                row[1].text = str(item.get("description", ""))
+        # Add a row for each TOC entry
+        for i, section_name in enumerate(toc_items, 1):
+            row = table.add_row().cells
+            # Column 0: Serial Number
+            if len(row) > 0:
+                row[0].text = str(i)
+            # Column 1: Description
+            if len(row) > 1:
+                row[1].text = section_name
 
-        print(f"DEBUG: Table of Contents now has {len(table.rows)} rows (1 header + {len(toc_items)} data rows)")
+        print(f"DEBUG: Table of Contents now has {len(table.rows)} rows")
 
     def _clear_table_keep_header(self, table):
         """Clear all rows except the header row."""
@@ -435,10 +362,11 @@ CRITICAL RULES:
             nfr = nfr[0] if isinstance(nfr[0], dict) else nfr
 
         # Populate table cells (first 4 rows)
-        table.cell(0, 1).text = str(nfr.get("no_of_users", "")) if isinstance(nfr, dict) else ""
-        table.cell(1, 1).text = str(nfr.get("peak_volume", "")) if isinstance(nfr, dict) else ""
-        table.cell(2, 1).text = str(nfr.get("monthly_volume", "")) if isinstance(nfr, dict) else ""
-        table.cell(3, 1).text = str(nfr.get("availability", "")) if isinstance(nfr, dict) else ""
+        if len(table.rows) >= 4:
+            table.cell(0, 1).text = str(nfr.get("no_of_users", "")) if isinstance(nfr, dict) else ""
+            table.cell(1, 1).text = str(nfr.get("peak_volume", "")) if isinstance(nfr, dict) else ""
+            table.cell(2, 1).text = str(nfr.get("monthly_volume", "")) if isinstance(nfr, dict) else ""
+            table.cell(3, 1).text = str(nfr.get("availability", "")) if isinstance(nfr, dict) else ""
 
         # The remaining NFR fields are handled by placeholder replacement in paragraphs
         # (impact_on_operational_process, regulatory_impact, etc.)
@@ -456,11 +384,4 @@ CRITICAL RULES:
         output_path: str
     ) -> str:
         data = self.generate_brd_json(requirements, context, schema_json)
-
-        # Inject the generated TOC into the data structure
-        toc_items = self._generate_toc_from_schema(schema_json)
-        if "document" not in data:
-            data["document"] = {}
-        data["document"]["table_of_contents"] = toc_items
-
         return self.fill_word_template(data, template_path, output_path)
