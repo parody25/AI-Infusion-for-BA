@@ -1,0 +1,20 @@
+You MUST return ONLY valid JSON matching the schema below.
+
+CRITICAL RULES:
+- No markdown
+- No explanations
+- No extra keys
+- No missing keys
+- Arrays must contain multiple objects where applicable
+- Use BFSI / CBUAE terminology
+- Use clear "shall" statements
+- Do NOT invent information
+
+=== REQUIREMENTS ===
+{requirements}
+
+=== CONTEXT ===
+{context}
+
+=== JSON SCHEMA ===
+{schema_json}

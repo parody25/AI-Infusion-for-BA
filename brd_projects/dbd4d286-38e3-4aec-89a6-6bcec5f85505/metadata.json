@@ -294,6 +294,63 @@
         "ef45cc33-0e92-4577-aa0c-c5b89340315f"
       ],
       "document_count": 9
+    },
+    {
+      "id": "4afb6a4a-23e2-4129-b0cd-09a82c59ffda",
+      "filename": "BRD_20260127_144327_4afb6a4a.docx",
+      "file_path": "brd_projects\\dbd4d286-38e3-4aec-89a6-6bcec5f85505\\brds\\BRD_20260127_144327_4afb6a4a.docx",
+      "generated_at": "2026-01-27T14:46:27.505813",
+      "requirements": "Generate an extensive Business requirement document for the uploaded document",
+      "input_document_ids": [
+        "05dbc8ec-f800-497b-8e16-22cd51e82682",
+        "9a11e1dd-b5b4-43b1-8026-728216a45a86",
+        "44eac59f-e76c-4abc-b1ca-4f571cbb4043",
+        "c3ff8490-a48b-48af-abdf-336511d64752",
+        "0d46aba4-127b-4411-be95-570afc01d56c",
+        "bb2870bc-58bd-44e5-83a4-4080530d25a6",
+        "856e8e43-173a-4bb0-a632-df345857d8bd",
+        "6594ad7b-6c74-406d-8642-da381f75d2bb",
+        "ef45cc33-0e92-4577-aa0c-c5b89340315f"
+      ],
+      "document_count": 9
+    },
+    {
+      "id": "8640718d-31dd-4e42-9d1e-104267f40fb2",
+      "filename": "BRD_20260129_082232_8640718d.docx",
+      "file_path": "brd_projects\\dbd4d286-38e3-4aec-89a6-6bcec5f85505\\brds\\BRD_20260129_082232_8640718d.docx",
+      "generated_at": "2026-01-29T08:25:34.785946",
+      "requirements": "Generate an extensive Business requirement document for the uploaded content",
+      "input_document_ids": [
+        "05dbc8ec-f800-497b-8e16-22cd51e82682",
+        "9a11e1dd-b5b4-43b1-8026-728216a45a86",
+        "44eac59f-e76c-4abc-b1ca-4f571cbb4043",
+        "c3ff8490-a48b-48af-abdf-336511d64752",
+        "0d46aba4-127b-4411-be95-570afc01d56c",
+        "bb2870bc-58bd-44e5-83a4-4080530d25a6",
+        "856e8e43-173a-4bb0-a632-df345857d8bd",
+        "6594ad7b-6c74-406d-8642-da381f75d2bb",
+        "ef45cc33-0e92-4577-aa0c-c5b89340315f"
+      ],
+      "document_count": 9
+    },
+    {
+      "id": "d268cbd4-21b4-4f4a-951d-1eab86e8b400",
+      "filename": "BRD_20260130_105912_d268cbd4.docx",
+      "file_path": "brd_projects\\dbd4d286-38e3-4aec-89a6-6bcec5f85505\\brds\\BRD_20260130_105912_d268cbd4.docx",
+      "generated_at": "2026-01-30T11:01:20.026248",
+      "requirements": "Generate an extensive Business requirement document for the uploaded document",
+      "input_document_ids": [
+        "05dbc8ec-f800-497b-8e16-22cd51e82682",
+        "9a11e1dd-b5b4-43b1-8026-728216a45a86",
+        "44eac59f-e76c-4abc-b1ca-4f571cbb4043",
+        "c3ff8490-a48b-48af-abdf-336511d64752",
+        "0d46aba4-127b-4411-be95-570afc01d56c",
+        "bb2870bc-58bd-44e5-83a4-4080530d25a6",
+        "856e8e43-173a-4bb0-a632-df345857d8bd",
+        "6594ad7b-6c74-406d-8642-da381f75d2bb",
+        "ef45cc33-0e92-4577-aa0c-c5b89340315f"
+      ],
+      "document_count": 9
     }
   ]
 }

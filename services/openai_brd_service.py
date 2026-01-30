@@ -22,7 +22,7 @@ class OpenAIBRDService:
     def __init__(
         self,
         model: str = "gpt-5.1",
-        max_output_tokens: int = 15000,
+        max_output_tokens: int = 12000,
         temperature: float = 0.2,
         timeout: int = 600
     ):
@@ -57,18 +57,30 @@ class OpenAIBRDService:
     # ------------------------------------------------------------------
 
     def _system_prompt(self) -> str:
-        return (
-            "You are a Senior Business Analyst with deep BFSI experience.\n"
-            "You produce regulatory-compliant Business Requirement Specifications.\n"
-            "You respond ONLY in valid JSON following the provided schema."
-        )
+        """Load system prompt from external file."""
+        prompt_file = os.path.join(os.path.dirname(__file__), '..', 'prompts', 'system_prompt.txt')
+        try:
+            with open(prompt_file, 'r', encoding='utf-8') as f:
+                return f.read().strip()
+        except FileNotFoundError:
+            return (
+                "You are a Senior Business Analyst with deep BFSI experience.\n"
+                "You produce regulatory-compliant Business Requirement Specifications.\n"
+                "You respond ONLY in valid JSON following the provided schema."
+            )
 
     # ------------------------------------------------------------------
-    # JSON GENERATION (SOURCE OF TRUTH)
+    # JSON GENERATION
     # ------------------------------------------------------------------
 
-    def generate_brd_json(self, requirements: str, context: str, schema_json: str) -> Dict:
-        user_prompt = f"""
+    def _load_user_prompt_template(self) -> str:
+        """Load user prompt template from external file."""
+        template_file = os.path.join(os.path.dirname(__file__), '..', 'prompts', 'user_prompt_template.txt')
+        try:
+            with open(template_file, 'r', encoding='utf-8') as f:
+                return f.read().strip()
+        except FileNotFoundError:
+            return """
 You MUST return ONLY valid JSON matching the schema below.
 
 CRITICAL RULES:
@@ -90,6 +102,13 @@ CRITICAL RULES:
 === JSON SCHEMA ===
 {schema_json}
 """
+
+    def generate_brd_json(self, requirements: str, context: str, schema_json: str) -> Dict:
+        user_prompt = self._load_user_prompt_template().format(
+            requirements=requirements,
+            context=context,
+            schema_json=schema_json
+        )
 
         response = self.client.responses.create(
             model=self.model,
@@ -288,7 +307,8 @@ CRITICAL RULES:
         ]:
             if key in data:
                 flat[key] = data[key]
-
+        
+        flat["date_today"] = datetime.today().strftime("%d-%b-%Y")
         return flat
 
     def _populate_nfr(self, table, data):
