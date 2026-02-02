@@ -9,6 +9,9 @@ CRITICAL RULES:
 - Use BFSI / CBUAE terminology
 - Use clear "shall" statements
 - Do NOT invent information
+- Format all text content using dot bullet points (starting with "• ") instead of paragraphs
+- For process descriptions, use numbered lists (starting with "1. ") to show sequence
+- For requirements and descriptions, use bullet points for better readability
 
 === REQUIREMENTS ===
 {requirements}

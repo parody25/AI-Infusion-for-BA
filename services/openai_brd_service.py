@@ -92,6 +92,9 @@ CRITICAL RULES:
 - Use BFSI / CBUAE terminology
 - Use clear "shall" statements
 - Do NOT invent information
+- Format all text content using dot bullet points (starting with "• ") instead of paragraphs
+- For process descriptions, use numbered lists (starting with "1. ") to show sequence
+- For requirements and descriptions, use bullet points for better readability
 
 === REQUIREMENTS ===
 {requirements}
@@ -144,6 +147,33 @@ CRITICAL RULES:
     # WORD TEMPLATE POPULATION
     # ------------------------------------------------------------------
 
+    def _format_content(self, text):
+        """Format text content with proper bullet points and numbered lists."""
+        if not text:
+            return ""
+        
+        lines = text.strip().split('\n')
+        formatted_lines = []
+        
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+            
+            # Check if line starts with numbered list pattern (e.g., "1.", "2.", etc.)
+            if line and line[0].isdigit() and len(line) > 1 and line[1] == '.':
+                formatted_lines.append(line)
+            # Check if line starts with bullet point pattern (e.g., "- ", "* ")
+            elif line.startswith(('- ', '* ', '• ')):
+                formatted_lines.append(line)
+            # For single lines or paragraphs, convert to bullet points
+            elif '\n' not in line and not line.startswith(('- ', '* ', '• ')) and not (line[0].isdigit() and len(line) > 1 and line[1] == '.'):
+                formatted_lines.append(f"- {line}")
+            else:
+                formatted_lines.append(line)
+        
+        return '\n'.join(formatted_lines)
+
     def fill_word_template(self, data: Dict, template_path: str, output_path: str) -> str:
         doc = Document(template_path)
 
@@ -185,7 +215,9 @@ CRITICAL RULES:
             for k, v in flattened_data.items():
                 placeholder = f"{{{k}}}"
                 if placeholder in text:
-                    text = text.replace(placeholder, str(v) if v is not None else "")
+                    # Format the content if it's text content
+                    formatted_value = self._format_content(str(v) if v is not None else "")
+                    text = text.replace(placeholder, formatted_value)
             return text
 
         for p in doc.paragraphs:
@@ -248,13 +280,13 @@ CRITICAL RULES:
 
             target_table.cell(0, 1).text = str(req.get("req_id_bs", ""))
             target_table.cell(1, 1).text = str(req.get("title_bs", ""))
-            target_table.cell(2, 1).text = str(req.get("description_bs", ""))
-            target_table.cell(3, 1).text = str(req.get("as_is_behaviour", ""))
-            target_table.cell(4, 1).text = str(req.get("to_be_behaviour", ""))
-            target_table.cell(5, 1).text = str(req.get("pre_requisite", ""))
-            target_table.cell(6, 1).text = str(req.get("acceptance_criteria", ""))
-            target_table.cell(7, 1).text = str(req.get("alternate_flows", ""))
-            target_table.cell(8, 1).text = str(req.get("reference_documents", ""))
+            target_table.cell(2, 1).text = self._format_content(str(req.get("description_bs", "")))
+            target_table.cell(3, 1).text = self._format_content(str(req.get("as_is_behaviour", "")))
+            target_table.cell(4, 1).text = self._format_content(str(req.get("to_be_behaviour", "")))
+            target_table.cell(5, 1).text = self._format_content(str(req.get("pre_requisite", "")))
+            target_table.cell(6, 1).text = self._format_content(str(req.get("acceptance_criteria", "")))
+            target_table.cell(7, 1).text = self._format_content(str(req.get("alternate_flows", "")))
+            target_table.cell(8, 1).text = self._format_content(str(req.get("reference_documents", "")))
 
     def _populate_traceability(self, doc, base_table, items):
         current_table = base_table
@@ -264,10 +296,10 @@ CRITICAL RULES:
             current_table = target_table
 
             target_table.cell(0, 1).text = str(trace_item.get("req_id_tm", ""))
-            target_table.cell(1, 1).text = str(trace_item.get("description_tm", ""))
-            target_table.cell(2, 1).text = str(trace_item.get("source_channel", ""))
-            target_table.cell(3, 1).text = str(trace_item.get("impacted_system", ""))
-            target_table.cell(4, 1).text = str(trace_item.get("outcome", ""))
+            target_table.cell(1, 1).text = self._format_content(str(trace_item.get("description_tm", "")))
+            target_table.cell(2, 1).text = self._format_content(str(trace_item.get("source_channel", "")))
+            target_table.cell(3, 1).text = self._format_content(str(trace_item.get("impacted_system", "")))
+            target_table.cell(4, 1).text = self._format_content(str(trace_item.get("outcome", "")))
 
     def _populate_table_of_contents(self, table):
         toc_items = [
@@ -303,7 +335,8 @@ CRITICAL RULES:
             "impact_on_operational_process", "regulatory_impact",
             "reports_requirement", "access_requirement",
             "security_requirement", "data_requirement",
-            "training_requirement"
+            "training_requirement", "open_questions", 
+            "contradictions_found_in_input_documents"
         ]:
             if key in data:
                 flat[key] = data[key]
@@ -316,10 +349,10 @@ CRITICAL RULES:
         if isinstance(nfr, list) and nfr:
             nfr = nfr[0]
 
-        table.cell(0, 1).text = str(nfr.get("no_of_users", ""))
-        table.cell(1, 1).text = str(nfr.get("peak_volume", ""))
-        table.cell(2, 1).text = str(nfr.get("monthly_volume", ""))
-        table.cell(3, 1).text = str(nfr.get("availability", ""))
+        table.cell(0, 1).text = self._format_content(str(nfr.get("no_of_users", "")))
+        table.cell(1, 1).text = self._format_content(str(nfr.get("peak_volume", "")))
+        table.cell(2, 1).text = self._format_content(str(nfr.get("monthly_volume", "")))
+        table.cell(3, 1).text = self._format_content(str(nfr.get("availability", "")))
 
     # ------------------------------------------------------------------
     # ORCHESTRATOR

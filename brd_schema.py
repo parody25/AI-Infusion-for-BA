@@ -49,5 +49,7 @@ BRD_SCHEMA_JSON_STRING = """{
   "access_requirement": "",
   "security_requirement": "",
   "data_requirement": "",
-  "training_requirement": ""
+  "training_requirement": "",
+  "open_questions": "",
+  "contradictions_found_in_input_documents": ""
 }"""
