@@ -9,11 +9,17 @@ CRITICAL RULES:
 - Do NOT invent information
 - Format all text content using dot bullet points (starting with "• ") instead of paragraphs.
 - For process descriptions, use numbered lists (starting with "1. ") to show sequence
+
 === REQUIREMENTS ===
 {requirements}
 
 === CONTEXT ===
 {context}
+
+=== BA PROCESS INSTRUCTIONS ===
+{process_instructions}
+
+If "BA PROCESS INSTRUCTIONS" are provided, generate a corresponding Mermaid.js diagram code in the 'process_visuals' section of the JSON. Use 'graph TD' for flowcharts or 'sequenceDiagram' for system interactions.
 
 === JSON SCHEMA ===
 {schema_json}

@@ -1,6 +1,8 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException, Body
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from typing import Optional
 import os
 import uuid
 import json
@@ -438,11 +440,19 @@ async def rename_project(project_id: str, request_data: Dict[str, str] = Body(..
         print(f"ERROR: Failed to rename project {project_id}: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to rename project: {str(e)}")
 
+class BRDGenerationRequest(BaseModel):
+    requirements: str
+    process_instructions: Optional[str] = None
+
 @app.post("/projects/{project_id}/generate_brd")
-async def generate_brd_for_project(project_id: str, requirements: str):
+async def generate_brd_for_project(project_id: str, request_data: BRDGenerationRequest):
     """Generate BRD for a specific project, store it in the project, and return metadata."""
+    requirements = request_data.requirements
+    process_instructions = request_data.process_instructions or ""
+    
     print(f"DEBUG: Starting BRD generation for project {project_id}")
     print(f"DEBUG: Requirements: {requirements}")
+    print(f"DEBUG: Process Instructions: {process_instructions}")
 
     project_path = get_project_path(project_id)
     if not os.path.exists(project_path):
@@ -519,13 +529,14 @@ async def generate_brd_for_project(project_id: str, requirements: str):
     output_filename = f"BRD_{timestamp}_{brd_id[:8]}.docx"
     output_path = os.path.join(brds_dir, output_filename)
 
-    # Generate and fill Word document
+    # Generate and fill Word document with BA instructions
     filled_path = brd_service.generate_brd_word(
         requirements=requirements,
         context=context,
         schema_json=BRD_SCHEMA_JSON_STRING,
         template_path="BRD_Template.docx",
-        output_path=output_path
+        output_path=output_path,
+        process_instructions=process_instructions
     )
 
     print(f"DEBUG: BRD generated successfully at {filled_path}")
@@ -537,6 +548,7 @@ async def generate_brd_for_project(project_id: str, requirements: str):
         "file_path": output_path,
         "generated_at": datetime.now().isoformat(),
         "requirements": requirements,
+        "process_instructions": process_instructions,
         "input_document_ids": input_document_ids,
         "document_count": len(input_document_ids)
     }

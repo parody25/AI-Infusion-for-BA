@@ -151,6 +151,15 @@ BRD_SCHEMA_JSON_STRING = """{
     "contradictions_found_in_input_documents": { 
       "type": "string",
       "description": "Identify and list any conflicting information between the provided source documents. You MUST explicitly mention the original source document name where the contradiction was identified(not context 1, 2 etc)."
+    },
+    "process_visuals": {
+      "type": "object",
+      "properties": {
+        "mermaid_code": { 
+          "type": "string", 
+          "description": "Generate a Mermaid.js sequence diagram or flowchart based on the BA instructions. Start with 'graph TD' or 'sequenceDiagram'." 
+        }
+      }
     }
   },
   "required": [
@@ -166,6 +175,7 @@ BRD_SCHEMA_JSON_STRING = """{
     "data_requirement",
     "training_requirement",
     "open_questions",
-    "contradictions_found_in_input_documents"
+    "contradictions_found_in_input_documents",
+    "process_visuals"
   ]
 }"""

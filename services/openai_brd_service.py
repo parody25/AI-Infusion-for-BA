@@ -1,5 +1,7 @@
 import os
 import json
+import requests
+import base64
 from datetime import datetime
 from typing import Dict
 from copy import deepcopy
@@ -7,7 +9,9 @@ from openai import OpenAI
 from dotenv import load_dotenv
 from docx import Document
 from docx.table import Table
+from docx.shared import Inches
 from brd_schema import BRD_SCHEMA_JSON_STRING
+from PIL import Image
 
 load_dotenv()
 
@@ -22,7 +26,7 @@ class OpenAIBRDService:
     def __init__(
         self,
         model: str = "gpt-5.1",
-        max_output_tokens: int = 12000,
+        max_output_tokens: int = 14000,
         temperature: float = 0.2,
         timeout: int = 600
     ):
@@ -88,7 +92,10 @@ CRITICAL RULES:
 - Do NOT include the "description" keys in your JSON output; only return the data keys and their generated values.
 - No markdown, no explanations.
 - Use BFSI / CBUAE terminology.
+- Use clear "shall" statements
+- Do NOT invent information
 - Format all text content using dot bullet points (starting with "• ") instead of paragraphs.
+- For process descriptions, use numbered lists (starting with "1. ") to show sequence
 
 === REQUIREMENTS ===
 {requirements}
@@ -96,14 +103,20 @@ CRITICAL RULES:
 === CONTEXT ===
 {context}
 
+=== BA PROCESS INSTRUCTIONS ===
+{process_instructions}
+
+If "BA PROCESS INSTRUCTIONS" are provided, generate a corresponding Mermaid.js diagram code in the 'process_visuals' section of the JSON. Use 'graph TD' for flowcharts or 'sequenceDiagram' for system interactions.
+
 === JSON SCHEMA ===
 {schema_json}
 """
 
-    def generate_brd_json(self, requirements: str, context: str, schema_json: str) -> Dict:
+    def generate_brd_json(self, requirements: str, context: str, schema_json: str, process_instructions: str = "") -> Dict:
         user_prompt = self._load_user_prompt_template().format(
             requirements=requirements,
             context=context,
+            process_instructions=process_instructions,
             schema_json=schema_json
         )
 
@@ -222,6 +235,13 @@ CRITICAL RULES:
                 for cell in row.cells:
                     for para in cell.paragraphs:
                         self._replace_text_in_runs(para, replace_text)
+
+        # ---------- DIAGRAM INSERTION ----------
+        # Check for Mermaid code in the LLM response
+        visuals = data.get("process_visuals", {})
+        mermaid_code = visuals.get("mermaid_code")
+        if mermaid_code:
+            self._insert_diagram(doc, mermaid_code)
 
         doc.save(output_path)
         return output_path
@@ -357,6 +377,68 @@ CRITICAL RULES:
         table.cell(3, 1).text = self._format_content(str(nfr.get("availability", "")))
 
     # ------------------------------------------------------------------
+    # DIAGRAM GENERATION
+    # ------------------------------------------------------------------
+
+    def _insert_diagram(self, doc, mermaid_code, placeholder="{process_diagram}"):
+        """
+        Convert Mermaid code to PNG using Mermaid.ink API and insert into document.
+        """
+        try:
+            # 1. Clean Mermaid code
+            # Remove markdown backticks
+            mermaid_code = mermaid_code.replace("```mermaid", "").replace("```", "").strip()
+            
+            # CRITICAL FIX: Replace non-breaking spaces (\xA0) with standard spaces
+            mermaid_code = mermaid_code.replace('\xa0', ' ')
+            
+            # 2. Encode Mermaid code to Base64 for the API
+            graphbytes = mermaid_code.encode("utf-8")
+            base64_bytes = base64.b64encode(graphbytes)
+            base64_string = base64_bytes.decode("ascii")
+            print(f"Base64 string: {base64_string}")
+            # 3. Fetch the image from Mermaid.ink
+            url = f"https://mermaid.ink/img/{base64_string}"
+            response = requests.get(url, timeout=30)
+            
+            if response.status_code == 200:
+                image_path = "process_flow.png"
+                with open(image_path, "wb") as f:
+                    f.write(response.content)
+                
+                # Helper to search and replace in a list of paragraphs
+                def replace_in_paragraphs(paragraphs):
+                    for p in paragraphs:
+                        if placeholder in p.text:
+                            print(f"DEBUG: Found placeholder in paragraph: {p.text}")
+                            # Clear placeholder text safely
+                            p.text = p.text.replace(placeholder, "")
+                            run = p.add_run()
+                            # Adjust width based on context (Full page vs Table cell)
+                            run.add_picture(image_path, width=Inches(5.5))
+                            return True
+                    return False
+
+                # Search main body
+                found = replace_in_paragraphs(doc.paragraphs)
+                
+                # Search tables if not found in main body
+                if not found:
+                    for table in doc.tables:
+                        for row in table.rows:
+                            for cell in row.cells:
+                                if replace_in_paragraphs(cell.paragraphs):
+                                    found = True
+                                    break
+                
+                return found
+            else:
+                print(f"DEBUG: Mermaid API returned status {response.status_code}")
+        except Exception as e:
+            print(f"DEBUG: Error in _insert_diagram: {e}")
+        return False
+
+    # ------------------------------------------------------------------
     # ORCHESTRATOR
     # ------------------------------------------------------------------
 
@@ -366,7 +448,8 @@ CRITICAL RULES:
         context: str,
         schema_json: str,
         template_path: str,
-        output_path: str
+        output_path: str,
+        process_instructions: str = ""
     ) -> str:
-        data = self.generate_brd_json(requirements, context, schema_json)
+        data = self.generate_brd_json(requirements, context, schema_json, process_instructions)
         return self.fill_word_template(data, template_path, output_path)
