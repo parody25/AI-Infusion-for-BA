@@ -283,17 +283,25 @@ CRITICAL RULES:
             target_table.cell(8, 1).text = self._format_content(str(req.get("reference_documents", "")))
 
     def _populate_traceability(self, doc, base_table, items):
-        current_table = base_table
-
+        """
+        Populates the single RTM table by adding rows for each item.
+        The template row (with placeholders) is the second row (index 1).
+        """
         for idx, trace_item in enumerate(items):
-            target_table = base_table if idx == 0 else self._duplicate_table_after(current_table, doc)
-            current_table = target_table
+            # For the first item, use the existing placeholder row (index 1)
+            # For subsequent items, add a new row at the bottom
+            if idx == 0:
+                row_cells = base_table.rows[1].cells
+            else:
+                row_cells = base_table.add_row().cells
 
-            target_table.cell(0, 1).text = str(trace_item.get("req_id_tm", ""))
-            target_table.cell(1, 1).text = self._format_content(str(trace_item.get("description_tm", "")))
-            target_table.cell(2, 1).text = self._format_content(str(trace_item.get("source_channel", "")))
-            target_table.cell(3, 1).text = self._format_content(str(trace_item.get("impacted_system", "")))
-            target_table.cell(4, 1).text = self._format_content(str(trace_item.get("outcome", "")))
+            # Map the horizontal columns: REQ ID, Description, Source, Impacted System, Outcome
+            # We use .strip() to keep content crisp as requested
+            row_cells[0].text = str(trace_item.get("req_id_tm", "")).strip()
+            row_cells[1].text = str(trace_item.get("description_tm", "")).strip()
+            row_cells[2].text = str(trace_item.get("source_channel", "")).strip()
+            row_cells[3].text = str(trace_item.get("impacted_system", "")).strip()
+            row_cells[4].text = str(trace_item.get("outcome", "")).strip()
 
     def _populate_table_of_contents(self, table):
         toc_items = [

@@ -81,19 +81,19 @@ BRD_SCHEMA_JSON_STRING = """{
           "req_id_tm": { "type": "string" },
           "description_tm": { 
             "type": "string",
-            "description": "Describe briefly what this traceability item represents and its purpose."
+            "description": "Provide a very brief, single-sentence description of the requirement's purpose. Keep it crisp."
           },
           "source_channel": { 
             "type": "string",
-            "description": "Identify the source or origin of this requirement or item."
+            "description": "Identify the origin (e.g., Mobile App, Regulatory Mandate)."
           },
           "impacted_system": { 
             "type": "string",
-            "description": "List the systems or components that are affected by this item."
+            "description": "List affected systems (e.g., Core Banking, CRM)."
           },
           "outcome": { 
             "type": "string",
-            "description": "Describe briefly the expected result or impact of this traceability item."
+            "description": "Provide a very brief, single-sentence expected result. Keep it crisp."
           }
         },
         "required": ["req_id_tm", "description_tm", "source_channel", "impacted_system", "outcome"]
