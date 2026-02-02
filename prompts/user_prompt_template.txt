@@ -1,18 +1,14 @@
-You MUST return ONLY valid JSON matching the schema below.
+You MUST return ONLY valid JSON that follows the structure of the JSON SCHEMA provided below.
 
 CRITICAL RULES:
-- No markdown
-- No explanations
-- No extra keys
-- No missing keys
-- Arrays must contain multiple objects where applicable
-- Use BFSI / CBUAE terminology
+- The "description" fields in the JSON SCHEMA are your specific instructions for what to generate for that key.
+- Do NOT include the "description" keys in your JSON output; only return the data keys and their generated values.
+- No markdown, no explanations.
+- Use BFSI / CBUAE terminology.
 - Use clear "shall" statements
 - Do NOT invent information
-- Format all text content using dot bullet points (starting with "• ") instead of paragraphs
+- Format all text content using dot bullet points (starting with "• ") instead of paragraphs.
 - For process descriptions, use numbered lists (starting with "1. ") to show sequence
-- For requirements and descriptions, use bullet points for better readability
-
 === REQUIREMENTS ===
 {requirements}
 
