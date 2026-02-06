@@ -32,41 +32,47 @@ BRD_SCHEMA_JSON_STRING = """{
       },
       "required": ["title_main", "id", "program", "type", "overview", "current_constraint", "objective", "in_scope", "out_of_scope"]
     },
-
     "business_requirements": {
       "type": "array",
+      "description": "EXTRACT ALL POSSIBLE business requirements from the provided documents. Perform an exhaustive breakdown of every functional need mentioned or implied. Categorize requirements by lifecycle (e.g., Issuance, Transaction Processing, Settlement, Dispute Management).",
       "items": {
         "type": "object",
         "properties": {
-          "req_id_bs": { "type": "string" },
-          "title_bs": { "type": "string" },
+          "req_id_bs": { 
+            "type": "string",
+            "description": "Unique identifier (e.g., BR-001). Sequence them logically based on the process flow."
+          },
+          "title_bs": { 
+            "type": "string",
+            "description": "A concise, descriptive title for the specific requirement."
+          },
           "description_bs": { 
             "type": "string",
-            "description": "Describe the business requirement in detail, focusing on what needs to be achieved."
+            "description": "Detailed 'Shall' statement. Describe the specific business rule or functional capability required. If the document mentions a specific CBUAE or AEP mandate rule, include it here."
           },
           "as_is_behaviour": { 
             "type": "string",
-            "description": "Document the current state or existing process before the change."
+            "description": "Describe the current state (e.g., 'Currently only Visa/MC are supported' or 'Process is manual'). If it is a brand new feature, state 'New Capability'."
           },
           "to_be_behaviour": { 
             "type": "string",
-            "description": "Document the desired future state or process after implementation."
+            "description": "Describe the future state after the Jaywan implementation. Focus on the automated flow and system interactions."
           },
           "pre_requisite": { 
             "type": "string",
-            "description": "List any conditions or requirements that must be met before this requirement can be implemented."
+            "description": "Technical or business conditions that must exist (e.g., 'Customer must have an active CASA account' or 'HSM must support Jaywan keys')."
           },
           "acceptance_criteria": { 
             "type": "string",
-            "description": "Define the measurable criteria that will be used to determine when the requirement has been successfully fulfilled."
+            "description": "List at least 3-4 specific, testable conditions that prove this requirement is met. Use bullet points."
           },
           "alternate_flows": { 
             "type": "string",
-            "description": "Describe alternative scenarios or exception handling for this requirement."
+            "description": "Exhaustive list of exceptions: what happens if the PIN is wrong, the chip fails, the network is down, or the limit is exceeded?"
           },
           "reference_documents": { 
             "type": "string",
-            "description": "List name of the documents, standards, or specifications that are referenced for this requirement."
+            "description": "Mandatory: Map this requirement back to the specific uploaded document name and page/section number where it was found."
           }
         },
         "required": ["req_id_bs", "title_bs", "description_bs", "as_is_behaviour", "to_be_behaviour", "pre_requisite", "acceptance_criteria", "alternate_flows", "reference_documents"]
