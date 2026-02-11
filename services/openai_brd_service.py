@@ -2,6 +2,7 @@ import os
 import json
 import requests
 import base64
+import time
 from datetime import datetime
 from typing import Dict
 from copy import deepcopy
@@ -9,8 +10,10 @@ from openai import OpenAI
 from dotenv import load_dotenv
 from docx import Document
 from docx.table import Table
-from docx.shared import Inches
-from brd_schema import BRD_SCHEMA_JSON_STRING
+from docx.shared import Inches, Pt
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
 from PIL import Image
 
 load_dotenv()
@@ -45,6 +48,10 @@ class OpenAIBRDService:
     # ------------------------------------------------------------------
 
     def _extract_text(self, response) -> str:
+        """
+        Extract text from OpenAI Responses API response object.
+        Supports both .output_text and structured .output[].content[] shapes.
+        """
         if hasattr(response, "output_text") and response.output_text:
             return response.output_text.strip()
 
@@ -158,33 +165,33 @@ If "BA PROCESS INSTRUCTIONS" are provided, generate a corresponding Mermaid.js d
         """Format text content with proper bullet points and numbered lists."""
         if not text:
             return ""
-        
+
         lines = text.strip().split('\n')
         formatted_lines = []
-        
+
         for line in lines:
             line = line.strip()
             if not line:
                 continue
-            
+
             # Check if line starts with numbered list pattern (e.g., "1.", "2.", etc.)
             if line and line[0].isdigit() and len(line) > 1 and line[1] == '.':
                 formatted_lines.append(line)
-            # Check if line starts with bullet point pattern (e.g., "- ", "* ")
+            # Check if line starts with bullet point pattern (e.g., "- ", "* ", "• ")
             elif line.startswith(('- ', '* ', '• ')):
                 formatted_lines.append(line)
             # For single lines or paragraphs, convert to bullet points
-            elif '\n' not in line and not line.startswith(('- ', '* ', '• ')) and not (line[0].isdigit() and len(line) > 1 and line[1] == '.'):
+            elif '\n' not in line and not line.startswith(('- ', '* ', '• ')) and not (line and line[0].isdigit() and len(line) > 1 and line[1] == '.'):
                 formatted_lines.append(f"- {line}")
             else:
                 formatted_lines.append(line)
-        
+
         return '\n'.join(formatted_lines)
 
     def fill_word_template(self, data: Dict, template_path: str, output_path: str) -> str:
         doc = Document(template_path)
 
-        # ---------- DYNAMIC TABLES ----------
+       # ---------- DYNAMIC TABLES ----------
         try:
             br_table = self._find_table_by_placeholder(doc, "{req_id_bs}")
             if isinstance(data.get("business_requirements"), list):
@@ -241,7 +248,9 @@ If "BA PROCESS INSTRUCTIONS" are provided, generate a corresponding Mermaid.js d
         visuals = data.get("process_visuals", {})
         mermaid_code = visuals.get("mermaid_code")
         if mermaid_code:
-            self._insert_diagram(doc, mermaid_code)
+            success = self._insert_diagram(doc, mermaid_code)
+            if not success:
+                print("DEBUG: Diagram insertion failed or placeholder not found.")
 
         doc.save(output_path)
         return output_path
@@ -273,6 +282,40 @@ If "BA PROCESS INSTRUCTIONS" are provided, generate a corresponding Mermaid.js d
                         return table
         raise RuntimeError(f"Table with placeholder '{placeholder}' not found")
 
+    # --- NEW: Force visible borders on tables ---
+    def _apply_table_borders(self, table):
+        """
+        Force borders on a python-docx table (outer + inner grid).
+        """
+        try:
+            tbl = table._tbl
+            tblPr = tbl.tblPr
+
+            def set_border(tag, size="8", color="000000"):
+                el = OxmlElement(tag)
+                el.set(qn('w:val'), 'single')
+                el.set(qn('w:sz'), size)   # 8 ≈ thin; increase for thicker lines
+                el.set(qn('w:space'), '0')
+                el.set(qn('w:color'), color)
+                return el
+
+            borders = OxmlElement('w:tblBorders')
+            borders.append(set_border('w:top'))
+            borders.append(set_border('w:bottom'))
+            borders.append(set_border('w:left'))
+            borders.append(set_border('w:right'))
+            borders.append(set_border('w:insideH'))
+            borders.append(set_border('w:insideV'))
+
+            # Remove existing borders then apply
+            for child in list(tblPr):
+                if child.tag == qn('w:tblBorders'):
+                    tblPr.remove(child)
+
+            tblPr.append(borders)
+        except Exception as e:
+            print(f"DEBUG: Failed to apply table borders: {e}")
+
     def _duplicate_table_after(self, base_table, parent_doc):
         new_tbl_xml = deepcopy(base_table._tbl)
         parent = base_table._tbl.getparent()
@@ -283,14 +326,22 @@ If "BA PROCESS INSTRUCTIONS" are provided, generate a corresponding Mermaid.js d
         base_table._tbl.addnext(spacer_p._p)
         spacer_p._p.addnext(new_tbl_xml)
 
-        return Table(new_tbl_xml, base_table._parent)
+        new_table = Table(new_tbl_xml, base_table._parent)
+        # Ensure duplicated tables have borders
+        self._apply_table_borders(new_table)
+        return new_table
 
     def _populate_business_requirements(self, doc, base_table, items):
-        current_table = base_table
+        # Ensure the base table has borders
+        self._apply_table_borders(base_table)
 
+        current_table = base_table
         for idx, req in enumerate(items):
             target_table = base_table if idx == 0 else self._duplicate_table_after(current_table, doc)
             current_table = target_table
+
+            # Also ensure borders on the (first/duplicated) target table
+            self._apply_table_borders(target_table)
 
             target_table.cell(0, 1).text = str(req.get("req_id_bs", ""))
             target_table.cell(1, 1).text = str(req.get("title_bs", ""))
@@ -323,6 +374,9 @@ If "BA PROCESS INSTRUCTIONS" are provided, generate a corresponding Mermaid.js d
             row_cells[3].text = str(trace_item.get("impacted_system", "")).strip()
             row_cells[4].text = str(trace_item.get("outcome", "")).strip()
 
+        # Ensure RTM table shows borders
+        self._apply_table_borders(base_table)
+
     def _populate_table_of_contents(self, table):
         toc_items = [
             "Document Sign off", "Document History", "Overview", "Current constraints",
@@ -339,6 +393,9 @@ If "BA PROCESS INSTRUCTIONS" are provided, generate a corresponding Mermaid.js d
             row = table.add_row().cells
             row[0].text = str(i)
             row[1].text = section
+
+        # Ensure TOC table shows borders
+        self._apply_table_borders(table)
 
     def _clear_table_keep_header(self, table):
         while len(table.rows) > 1:
@@ -357,12 +414,12 @@ If "BA PROCESS INSTRUCTIONS" are provided, generate a corresponding Mermaid.js d
             "impact_on_operational_process", "regulatory_impact",
             "reports_requirement", "access_requirement",
             "security_requirement", "data_requirement",
-            "training_requirement", "open_questions", 
+            "training_requirement", "open_questions",
             "contradictions_found_in_input_documents"
         ]:
             if key in data:
                 flat[key] = data[key]
-        
+
         flat["date_today"] = datetime.today().strftime("%d-%b-%Y")
         return flat
 
@@ -376,67 +433,201 @@ If "BA PROCESS INSTRUCTIONS" are provided, generate a corresponding Mermaid.js d
         table.cell(2, 1).text = self._format_content(str(nfr.get("monthly_volume", "")))
         table.cell(3, 1).text = self._format_content(str(nfr.get("availability", "")))
 
+        # Ensure NFR table shows borders
+        self._apply_table_borders(table)
+
     # ------------------------------------------------------------------
-    # DIAGRAM GENERATION
+    # DIAGRAM LAYOUT HELPERS
     # ------------------------------------------------------------------
 
+    def _set_row_cant_split(self, row):
+        """
+        Apply w:cantSplit to the table row to prevent Word from splitting it across pages.
+        """
+        try:
+            tr = row._tr
+            trPr = tr.get_or_add_trPr()
+            if trPr.find(qn('w:cantSplit')) is None:
+                cant_split = OxmlElement('w:cantSplit')
+                trPr.append(cant_split)
+        except Exception as e:
+            print(f"DEBUG: Failed to set cantSplit on row: {e}")
+
+    def _disable_row_splitting_all_tables(self, doc):
+        """
+        Apply cantSplit to all table rows in the document (defensive).
+        """
+        for table in doc.tables:
+            for row in table.rows:
+                self._set_row_cant_split(row)
+
+    def _compute_width_for_page(self, doc, image_path):
+        """
+        Return a Length suitable for run.add_picture(width=...) that ensures:
+        - Width does not exceed printable width
+        - Height does not exceed printable height
+        - Aspect ratio preserved
+        """
+        try:
+            section = doc.sections[0]
+            max_w_in = section.page_width.inches - section.left_margin.inches - section.right_margin.inches
+            max_h_in = section.page_height.inches - section.top_margin.inches - section.bottom_margin.inches
+        except Exception:
+            # Safe defaults if sections are not accessible
+            max_w_in = 6.0
+            max_h_in = 8.0
+
+        try:
+            with Image.open(image_path) as im:
+                w_px, h_px = im.size
+        except Exception as e:
+            print(f"DEBUG: PIL failed to open image for size calc: {e}")
+            safe_w = min(5.5, max_w_in)
+            return Inches(safe_w)
+
+        if w_px <= 0 or h_px <= 0:
+            safe_w = min(5.5, max_w_in)
+            return Inches(safe_w)
+
+        aspect = h_px / float(w_px)
+
+        # Start with max printable width
+        width_in = max_w_in
+        height_in = width_in * aspect
+
+        # If height would exceed printable height, reduce width accordingly
+        if height_in > max_h_in:
+            height_in = max_h_in
+            width_in = height_in / aspect
+
+        # Tiny safety cushion to avoid Word rounding overflow at edges
+        width_in = max(0.5, min(width_in, max_w_in) - 0.02)
+        return Inches(width_in)
+
+    # ------------------------------------------------------------------
+    # DIAGRAM GENERATION & INSERTION (HARDENED)
+    # ------------------------------------------------------------------
     def _insert_diagram(self, doc, mermaid_code, placeholder="{process_diagram}"):
         """
         Convert Mermaid code to PNG using Mermaid.ink API and insert into document.
+        Ensures:
+        - Image is inserted in a NEW paragraph (not inline)
+        - Placeholder paragraph is removed
+        - Title paragraph remains untouched
+        - Correct order: Title -> Image
+        - No pagination glitches
+        - No inline layout bugs
+        - Professional BRD formatting
         """
-        try:
-            # 1. Clean Mermaid code
-            # Remove markdown backticks
-            mermaid_code = mermaid_code.replace("```mermaid", "").replace("```", "").strip()
-            
-            # CRITICAL FIX: Replace non-breaking spaces (\xA0) with standard spaces
-            mermaid_code = mermaid_code.replace('\xa0', ' ')
-            
-            # 2. Encode Mermaid code to Base64 for the API
-            graphbytes = mermaid_code.encode("utf-8")
-            base64_bytes = base64.b64encode(graphbytes)
-            base64_string = base64_bytes.decode("ascii")
-            print(f"Base64 string: {base64_string}")
-            # 3. Fetch the image from Mermaid.ink
-            url = f"https://mermaid.ink/img/{base64_string}"
-            response = requests.get(url, timeout=30)
-            
-            if response.status_code == 200:
-                image_path = "process_flow.png"
-                with open(image_path, "wb") as f:
-                    f.write(response.content)
-                
-                # Helper to search and replace in a list of paragraphs
-                def replace_in_paragraphs(paragraphs):
-                    for p in paragraphs:
-                        if placeholder in p.text:
-                            print(f"DEBUG: Found placeholder in paragraph: {p.text}")
-                            # Clear placeholder text safely
-                            p.text = p.text.replace(placeholder, "")
-                            run = p.add_run()
-                            # Adjust width based on context (Full page vs Table cell)
-                            run.add_picture(image_path, width=Inches(5.5))
-                            return True
-                    return False
 
-                # Search main body
-                found = replace_in_paragraphs(doc.paragraphs)
-                
-                # Search tables if not found in main body
-                if not found:
-                    for table in doc.tables:
-                        for row in table.rows:
-                            for cell in row.cells:
-                                if replace_in_paragraphs(cell.paragraphs):
-                                    found = True
+        try:
+            # -----------------------------
+            # 1) Clean Mermaid code
+            # -----------------------------
+            mermaid_code = (mermaid_code or "").replace("```mermaid", "").replace("```", "").strip()
+            mermaid_code = mermaid_code.replace('\xa0', ' ')
+            if not mermaid_code:
+                print("DEBUG: Mermaid code is empty; skipping diagram insertion.")
+                return False
+
+            # -----------------------------
+            # 2) Encode + fetch image
+            # -----------------------------
+            graphbytes = mermaid_code.encode("utf-8")
+            base64_string = base64.urlsafe_b64encode(graphbytes).decode("ascii").rstrip("=")
+            print(f"Base64 string: {base64_string}")
+            url = f"https://mermaid.ink/img/{base64_string}"
+
+            response = None
+            for attempt in range(3):
+                try:
+                    response = requests.get(url, timeout=30)
+                    if response.status_code == 200:
+                        break
+                    print(f"DEBUG: Mermaid API status {response.status_code}, attempt {attempt+1}/3")
+                except Exception as e:
+                    print(f"DEBUG: Mermaid API request error (attempt {attempt+1}/3): {e}")
+                time.sleep(1)
+
+            if not response or response.status_code != 200:
+                print("DEBUG: Mermaid API failed; diagram not generated.")
+                return False
+
+            image_path = "process_flow.png"
+            with open(image_path, "wb") as f:
+                f.write(response.content)
+
+            # -----------------------------
+            # 3) Compute safe width
+            # -----------------------------
+            width_len = self._compute_width_for_page(doc, image_path)
+
+            # -----------------------------
+            # 4) Find placeholder
+            # -----------------------------
+            placeholder_para = None
+            placeholder_parent = None
+
+            # Search body paragraphs
+            for p in doc.paragraphs:
+                if placeholder in p.text:
+                    placeholder_para = p
+                    placeholder_parent = p._p.getparent()
+                    break
+
+            # Search tables if not found
+            if not placeholder_para:
+                for table in doc.tables:
+                    for row in table.rows:
+                        for cell in row.cells:
+                            for p in cell.paragraphs:
+                                if placeholder in p.text:
+                                    placeholder_para = p
+                                    placeholder_parent = p._p.getparent()
+                                    # prevent row split
+                                    self._set_row_cant_split(row)
                                     break
-                
-                return found
-            else:
-                print(f"DEBUG: Mermaid API returned status {response.status_code}")
+                            if placeholder_para:
+                                break
+                        if placeholder_para:
+                            break
+                    if placeholder_para:
+                        break
+
+            if not placeholder_para:
+                print(f"DEBUG: Placeholder '{placeholder}' not found.")
+                return False
+
+            # -----------------------------
+            # 5) Remove placeholder paragraph
+            # -----------------------------
+            # Remove only the placeholder text, not the whole paragraph
+            for r in placeholder_para.runs:
+                if r.text and placeholder in r.text:
+                    r.text = r.text.replace(placeholder, "").strip()
+
+            # If paragraph becomes empty after removal, then delete it
+            if not placeholder_para.text.strip():
+                placeholder_parent.remove(placeholder_para._p)
+
+            # -----------------------------
+            # 6) Insert image in NEW paragraph (BLOCK)
+            # -----------------------------
+            img_para = doc.add_paragraph()
+            img_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            img_para.paragraph_format.keep_together = True
+            img_para.paragraph_format.keep_with_next = False
+            img_para.paragraph_format.space_before = Pt(6)
+            img_para.paragraph_format.space_after = Pt(12)
+
+            run = img_para.add_run()
+            run.add_picture(image_path, width=width_len)
+
+            return True
+
         except Exception as e:
             print(f"DEBUG: Error in _insert_diagram: {e}")
-        return False
+            return False
 
     # ------------------------------------------------------------------
     # ORCHESTRATOR
