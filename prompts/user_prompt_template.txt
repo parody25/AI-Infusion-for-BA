@@ -6,7 +6,7 @@ CRITICAL RULES:
 - No markdown, no explanations.
 - Use BFSI / CBUAE terminology.
 - Use clear "shall" statements
-- Do NOT invent information
+- Do NOT invent information or manufacture any terminology
 - Format all text content using dot bullet points (starting with "• ") instead of paragraphs.
 - For process descriptions, use numbered lists (starting with "1. ") to show sequence
 

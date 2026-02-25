@@ -20,10 +20,12 @@ from typing import List, Dict
 from email import policy
 from email.parser import BytesParser
 from brd_schema import BRD_SCHEMA_JSON_STRING
+from document_download_routes import doc_download_router
 
 load_dotenv()
 
 app = FastAPI(title="AI Infusion for BA", description="POC for enhancing BRD quality with AI")
+app.include_router(doc_download_router)
 
 # Add CORS middleware
 app.add_middleware(

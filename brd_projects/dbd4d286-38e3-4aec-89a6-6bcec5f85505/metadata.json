@@ -606,6 +606,46 @@
         "ef45cc33-0e92-4577-aa0c-c5b89340315f"
       ],
       "document_count": 9
+    },
+    {
+      "id": "991c4eab-57d6-41c5-899d-d38630d41e20",
+      "filename": "BRD_20260220_074710_991c4eab.docx",
+      "file_path": "brd_projects\\dbd4d286-38e3-4aec-89a6-6bcec5f85505\\brds\\BRD_20260220_074710_991c4eab.docx",
+      "generated_at": "2026-02-20T07:49:24.548775",
+      "requirements": "Generate an extensive business requirement document for the uploaded content",
+      "process_instructions": "Scenario:\n1. Customer performs an ATM withdrawal transaction with a Jaywan co badged debit card\n2. The customer enters the PIN and amount\n3. The transaction goes to Core banking\n4. From core banking system- transaction goes to PowerCard\n5. The transaction is identified as domestic or international and routed accordingly to the scheme\n6. The transaction is either approved or rejected \n          6.1 If the transaction is approved\n\t\t  6.1.1 The customer will be able to withdraw requested cash\n          6.1.2 Atm returns the card and provides receipt\n\t\t  6.1.2 Transaction details are alerted by sms\n          6.1.3 The transaction details are updated in the customer's account at eod\n        \n         6.2 If the transaction is rejected\n         6.2.1 The customer will not be able to withdraw the cash\n         6.2.2 ATM returns the card to the customer\n         6.2 3 The decline message is provided by sms but there will be no entry in customer's account\n          6.2.4 ATM returns the card to the customer",
+      "input_document_ids": [
+        "05dbc8ec-f800-497b-8e16-22cd51e82682",
+        "9a11e1dd-b5b4-43b1-8026-728216a45a86",
+        "44eac59f-e76c-4abc-b1ca-4f571cbb4043",
+        "c3ff8490-a48b-48af-abdf-336511d64752",
+        "0d46aba4-127b-4411-be95-570afc01d56c",
+        "bb2870bc-58bd-44e5-83a4-4080530d25a6",
+        "856e8e43-173a-4bb0-a632-df345857d8bd",
+        "6594ad7b-6c74-406d-8642-da381f75d2bb",
+        "ef45cc33-0e92-4577-aa0c-c5b89340315f"
+      ],
+      "document_count": 9
+    },
+    {
+      "id": "a907f41a-e6be-41db-8d0a-e594ae3c4904",
+      "filename": "BRD_20260220_075627_a907f41a.docx",
+      "file_path": "brd_projects\\dbd4d286-38e3-4aec-89a6-6bcec5f85505\\brds\\BRD_20260220_075627_a907f41a.docx",
+      "generated_at": "2026-02-20T07:59:12.927589",
+      "requirements": "Generate an extensive business requirement document for the uploaded content",
+      "process_instructions": "Scenario:\n1. Customer performs an ATM withdrawal transaction with a Jaywan co badged debit card\n2. The customer enters the PIN and amount\n3. The transaction goes to Core banking\n4. From core banking system- transaction goes to PowerCard\n5. The transaction is identified as domestic or international and routed accordingly to the scheme\n6. The transaction is either approved or rejected \n          6.1 If the transaction is approved\n\t\t  6.1.1 The customer will be able to withdraw requested cash\n          6.1.2 Atm returns the card and provides receipt\n\t\t  6.1.2 Transaction details are alerted by sms\n          6.1.3 The transaction details are updated in the customer's account at eod\n        \n         6.2 If the transaction is rejected\n         6.2.1 The customer will not be able to withdraw the cash\n         6.2.2 ATM returns the card to the customer\n         6.2 3 The decline message is provided by sms but there will be no entry in customer's account\n          6.2.4 ATM returns the card to the customer",
+      "input_document_ids": [
+        "05dbc8ec-f800-497b-8e16-22cd51e82682",
+        "9a11e1dd-b5b4-43b1-8026-728216a45a86",
+        "44eac59f-e76c-4abc-b1ca-4f571cbb4043",
+        "c3ff8490-a48b-48af-abdf-336511d64752",
+        "0d46aba4-127b-4411-be95-570afc01d56c",
+        "bb2870bc-58bd-44e5-83a4-4080530d25a6",
+        "856e8e43-173a-4bb0-a632-df345857d8bd",
+        "6594ad7b-6c74-406d-8642-da381f75d2bb",
+        "ef45cc33-0e92-4577-aa0c-c5b89340315f"
+      ],
+      "document_count": 9
     }
   ]
 }
