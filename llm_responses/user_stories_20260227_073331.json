@@ -1,0 +1,348 @@
+{
+  "user_stories": [
+    {
+      "story_id": "US-001",
+      "title": "Configure Jaywan Compliance Parameters per CBUAE Circular 5480-2024",
+      "user_role": "• Head of Compliance",
+      "description": "• As the Head of Compliance, I want Jaywan scheme and regulatory parameters (circular 5480-2024 and AEP rulebook) to be captured and configured in the bank’s product and routing setup so that all Jaywan mono-badged and co-badged card processing remains compliant with CBUAE and AEP requirements.",
+      "acceptance_criteria": "• CBUAE circular 5480-2024 and the latest AEP Jaywan scheme rulebook are stored in the bank’s regulatory repository and marked as approved for implementation.\n• Compliance sign-off document explicitly confirms that Jaywan-related product, routing, dispute, reconciliation, and reporting configurations align with circular 5480-2024 and AEP rules.\n• Test scenarios covering domestic, GCC (where applicable), and international transactions for Jaywan mono and co-badged cards show no violations of CBUAE/AEP mandates.\n• Any CBUAE/AEP audit observation relating to Jaywan issuance or routing is logged, tracked, and closed within agreed timelines, with evidence stored for future audits.",
+      "priority": "• High",
+      "effort_estimate": "• M",
+      "brd_reference": "• REQID1 Regulatory Compliance with CBUAE Jaywan Mandate",
+      "version": "• v1.0"
+    },
+    {
+      "story_id": "US-002",
+      "title": "Enable Jaywan Co-Badged Card Issuance in CMS",
+      "user_role": "• Card Product Manager",
+      "description": "• As a Card Product Manager, I want to configure Jaywan co-badged card products (Jaywan + Visa / Jaywan + Mastercard) in the CMS so that eligible customers receive cards that support domestic transactions via Jaywan and international transactions via the respective international scheme.",
+      "acceptance_criteria": "• At least one Jaywan+Visa and/or Jaywan+Mastercard co-badged card product is created in CMS with approved parameters (fees, limits, segments) as per product governance approvals.\n• Test cards for each co-badged product can be issued, embossed/personalized, activated, renewed, replaced, and closed without errors in SIT/UAT.\n• Domestic UAE transactions (ATM, POS, e-commerce) using co-badged cards are routed via Jaywan, and cross-border/non-domestic transactions are routed via the international scheme as per defined routing logic.\n• Card plastics, digital card images, and statements display both Jaywan and international scheme branding in line with relevant scheme guidelines.\n• Certification results from Jaywan/AEP and the international schemes show that the co-badged products are approved for production.",
+      "priority": "• High",
+      "effort_estimate": "• L",
+      "brd_reference": "• REQID3 Jaywan Co‑Badged Card Issuance",
+      "version": "• v1.0"
+    },
+    {
+      "story_id": "US-003",
+      "title": "Enable Jaywan Mono-Badged Card Product Setup",
+      "user_role": "• Card Product Manager",
+      "description": "• As a Card Product Manager, I want to define and enable at least one Jaywan mono-badged card product in the CMS so that customers can be issued domestic-focused cards for usage within UAE and permitted GCC corridors in line with AEP rules.",
+      "acceptance_criteria": "• Product definition document for Jaywan mono-badged card (target segments, fees, limits, usage scope) is approved by Product, Risk, and Compliance.\n• A Jaywan mono-badged product is created in CMS with correct BIN, scheme indicators, and lifecycle rules (issuance, activation, renewal, replacement, closure).\n• SIT/UAT issuance of Jaywan mono-badged cards completes successfully including PIN generation and activation.\n• Domestic transactions on Jaywan mono-badged cards are accepted on Jaywan rails and are declined on non-permitted international rails with appropriate decline reason codes and messages.\n• Branch and contact center procedures for handling mono-badged card lifecycle and customer queries are updated and communicated.",
+      "priority": "• High",
+      "effort_estimate": "• M",
+      "brd_reference": "• REQID2 Jaywan Mono‑Badged Card Issuance",
+      "version": "• v1.0"
+    },
+    {
+      "story_id": "US-004",
+      "title": "Implement Domestic Routing Logic for Jaywan Co-Badged Cards",
+      "user_role": "• Switch Operations Manager",
+      "description": "• As a Switch Operations Manager, I want to configure routing rules in the authorization switch and payment gateway so that eligible domestic (UAE and applicable GCC) transactions on co-badged cards are processed via Jaywan and non-domestic transactions are processed via the international scheme.",
+      "acceptance_criteria": "• A routing decision matrix is documented showing how ATM, POS, and e-commerce transactions are routed based on geography, MCC, and scheme indicators, aligned with AEP and scheme guidance.\n• SIT/UAT tests demonstrate that all domestic UAE transactions on co-badged cards (ATM, POS, e-commerce) are routed via Jaywan, and non-domestic transactions are routed via the international scheme.\n• No production-like domestic transaction test case is observed bypassing Jaywan except where explicitly permitted by CBUAE/AEP rules (e.g., confirmed fallback scenarios).\n• Routing rules can be audited from configuration logs, showing user, timestamp, and change details.\n• Fallback behavior for Jaywan outage (where allowed by regulator) is documented as an open question dependency and is not activated until formally confirmed.",
+      "priority": "• High",
+      "effort_estimate": "• L",
+      "brd_reference": "• REQID4 Domestic Routing Logic for Co‑Badged Cards",
+      "version": "• v1.0"
+    },
+    {
+      "story_id": "US-005",
+      "title": "Integrate Jaywan for E-commerce and Tokenized Transactions via CBUAE DMS",
+      "user_role": "• E-commerce Channel Manager",
+      "description": "• As an E-commerce Channel Manager, I want Jaywan integration implemented for e-commerce and tokenized transactions (including POS tokenized where in scope) in alignment with CBUAE DMS “To‑Be” flows so that domestic digital transactions can be processed securely on Jaywan rails.",
+      "acceptance_criteria": "• CBUAE DMS “To‑Be” documentation for Jaywan e-commerce and tokenization flows is available and baselined for implementation.\n• Message mappings for Jaywan DMS are configured in the e-commerce gateway, tokenization platform/TSP, and switch in line with AEP specifications.\n• SIT/UAT e-commerce and tokenized transaction scenarios (including POS tokenized if confirmed in scope) complete end-to-end for authorization, clearing, and settlement via Jaywan.\n• Existing Visa e-commerce and tokenization flows continue to function without regression as evidenced by regression test results.\n• For PSPs/gateways that do not yet support Jaywan, documented fallback behavior to international schemes is implemented and monitored, with such transactions clearly identifiable for reporting.",
+      "priority": "• High",
+      "effort_estimate": "• L",
+      "brd_reference": "• REQID5 Jaywan Integration for E‑commerce and Tokenized Transactions",
+      "version": "• v1.0"
+    },
+    {
+      "story_id": "US-006",
+      "title": "Implement Jaywan Reconciliation and GL Posting",
+      "user_role": "• Finance Controller",
+      "description": "• As a Finance Controller, I want Jaywan-specific reconciliation processes and GL mappings to be implemented so that all Jaywan settlement entries (principal, fees, interchange, chargebacks) are accurately posted and reconciled against AEP files.",
+      "acceptance_criteria": "• A Jaywan GL design document defining all required GL accounts and mapping rules for principal, interchange, scheme fees, and chargebacks is approved by Finance.\n• Reconciliation rules are configured in the reconciliation engine for Jaywan settlement and clearing file formats as provided by AEP.\n• Daily reconciliation runs for Jaywan test data in SIT/UAT show no unexplained variances beyond defined tolerances, and exception items are reported.\n• GL postings for Jaywan transactions in test environments follow the approved mappings, and trial balances reconcile with settlement file totals.\n• Contingency procedures for missing or delayed AEP settlement files are documented, including exception reporting and manual reconciliation steps.",
+      "priority": "• High",
+      "effort_estimate": "• L",
+      "brd_reference": "• REQID6 Reconciliation and GL Posting for Jaywan",
+      "version": "• v1.0"
+    },
+    {
+      "story_id": "US-007",
+      "title": "Configure Jaywan Dispute, Refund, and Chargeback Workflows",
+      "user_role": "• Head of Card Operations",
+      "description": "• As the Head of Card Operations, I want Jaywan-specific dispute, refund, reversal, and chargeback workflows to be configured in the dispute management system so that Jaywan transactions are handled in line with AEP and CBUAE guidelines.",
+      "acceptance_criteria": "• Jaywan dispute and chargeback rules (reason codes, timelines, documentation) from AEP are documented and agreed with Operations and Legal.\n• Dispute management system is configured with Jaywan scheme indicators, reason codes, statuses, and SLA timers distinct from Visa/Mastercard where required.\n• Test cases for logging, processing, and closing Jaywan disputes and chargebacks complete successfully end-to-end, including GL impacts and customer notifications.\n• System supports processing of refunds and reversals for Jaywan ATM, POS, and e-commerce transactions with correct posting and audit trails.\n• Dispute MIS includes Jaywan-specific SLA metrics (e.g., percentage of disputes resolved within mandated timeframes) and can be reported to management.",
+      "priority": "• High",
+      "effort_estimate": "• L",
+      "brd_reference": "• REQID7 Dispute, Refund, and Chargeback Processing for Jaywan",
+      "version": "• v1.0"
+    },
+    {
+      "story_id": "US-008",
+      "title": "Implement Jaywan Reporting and Regulatory Submissions",
+      "user_role": "• Regulatory Reporting Manager",
+      "description": "• As a Regulatory Reporting Manager, I want Jaywan-specific internal and regulatory reports to be generated so that the bank can meet CBUAE/AEP reporting obligations and monitor Jaywan performance.",
+      "acceptance_criteria": "• Required Jaywan reporting templates, periodicity, and submission channels from CBUAE/AEP are documented and baselined.\n• Data Warehouse/BI layer is enhanced to capture Jaywan scheme indicators, card type (mono/co-badged), channel, and financial metrics for reporting.\n• Daily operational and reconciliation reports for Jaywan (volume/value by channel, unmatched items, dispute SLA breaches) are available for Operations and Finance.\n• Monthly/quarterly regulatory reports for Jaywan are produced in the prescribed formats and can be generated on demand in UAT for sample periods.\n• Reconciliation between source transaction systems and Jaywan reports (internal and regulatory) demonstrates data completeness and consistency.",
+      "priority": "• High",
+      "effort_estimate": "• M",
+      "brd_reference": "• REQID8 Reporting and Regulatory Submissions for Jaywan",
+      "version": "• v1.0"
+    },
+    {
+      "story_id": "US-009",
+      "title": "Enable Jaywan on Samsung Wallet and Define Wallet Roadmap",
+      "user_role": "• Digital Channels Manager",
+      "description": "• As a Digital Channels Manager, I want Jaywan mono-badged and co-badged cards to be provisionable and usable via Samsung Wallet, and I want high-level requirements captured for Google Pay and Apple Pay, so that Jaywan cardholders can make digital wallet payments in line with AEP’s roadmap.",
+      "acceptance_criteria": "• Technical and contractual pre-requisites with AEP, TSP, and Samsung are documented as in place before build starts.\n• SIT/UAT tests show that Jaywan cards can be successfully tokenized, provisioned, and used via Samsung Wallet for domestic transactions where Jaywan is accepted.\n• Fraud monitoring and SMS/email alerting for wallet-based Jaywan transactions are aligned with existing card controls and operate without gaps.\n• A high-level requirements document or backlog items describe required capabilities and constraints for Google Pay and Apple Pay enablement for Jaywan in subsequent phases.\n• Customer-facing FAQs and support scripts include guidance on Jaywan usage through Samsung Wallet and limitations on unsupported devices/wallets.",
+      "priority": "• Medium",
+      "effort_estimate": "• L",
+      "brd_reference": "• REQID9 Jaywan Digital Wallet Enablement (Samsung Wallet, later Google/Apple Pay)",
+      "version": "• v1.0"
+    },
+    {
+      "story_id": "US-010",
+      "title": "Integrate Jaywan Transactions into Fraud and AML Monitoring",
+      "user_role": "• Head of Fraud Risk",
+      "description": "• As the Head of Fraud Risk, I want all Jaywan transactions to feed into existing fraud monitoring and AML/sanctions screening systems so that Jaywan usage is monitored with adequate controls comparable to Visa/Mastercard.",
+      "acceptance_criteria": "• Fraud and AML systems are confirmed to ingest Jaywan transaction data fields including scheme indicators and any Jaywan-specific attributes.\n• Jaywan transactions are visible in fraud monitoring dashboards and can be filtered by scheme, channel, and card product.\n• Test scenarios simulating suspicious Jaywan activity trigger fraud/AML alerts as expected, and sanctions screening is applied to cross-border/bilateral corridor Jaywan transactions.\n• Post-implementation review confirms no deterioration in key fraud KPIs attributable to Jaywan-related gaps.\n• Any additional AEP- or country-specific AML rules required for bilateral corridors are documented as open questions and tracked for configuration once confirmed.",
+      "priority": "• High",
+      "effort_estimate": "• M",
+      "brd_reference": "• REQID10 Risk, Fraud and AML Controls for Jaywan",
+      "version": "• v1.0"
+    },
+    {
+      "story_id": "US-011",
+      "title": "Update Customer Communications for Jaywan Products and Routing",
+      "user_role": "• Marketing Manager",
+      "description": "• As a Marketing Manager, I want all relevant customer communications updated to explain Jaywan mono-badged and co-badged cards, routing behavior, and any impact on fees and disputes so that customers clearly understand the new scheme in line with AEP’s national awareness campaign.",
+      "acceptance_criteria": "• Updated T&Cs, FAQs, website content, SMS/email templates, and statement messages covering Jaywan usage, co-badging, domestic routing, and high-level dispute process are drafted and approved by Marketing, Legal, and Compliance.\n• Contact center scripts and knowledge base articles include responses to common Jaywan questions (domestic vs international usage, fees, acceptance coverage, refunds/disputes).\n• All updated communications are published before first Jaywan product go-live, and availability is verified on relevant channels (web, mobile, branch, contact center).\n• A process is documented to update communications in case of future regulatory changes to Jaywan routing or fees, referencing CBUAE-mandated notice periods.\n• Initial post-launch customer feedback/complaint metrics related to Jaywan understanding are monitored and are within acceptable thresholds as agreed with Service Quality.",
+      "priority": "• Medium",
+      "effort_estimate": "• M",
+      "brd_reference": "• REQID11 Customer Communication and Awareness for Jaywan",
+      "version": "• v1.0"
+    },
+    {
+      "story_id": "US-012",
+      "title": "Capture Open Questions and Discovery Items for Jaywan",
+      "user_role": "• Business Analyst",
+      "description": "• As a Business Analyst, I want all Jaywan-related open questions from the BRD (e.g., tokenized POS scope, reconciliation formats, dispute rules, capacity sizing) to be logged and tracked so that dependencies on AEP, CBUAE, and internal stakeholders are visible and can be resolved before build and go-live.",
+      "acceptance_criteria": "• A consolidated log of open questions (e.g., POS tokenized behavior, reconciliation file formats, implementation timelines, fallback rules, dispute procedures, tokenization model, cardholder volumes, TPS and monthly volumes, data retention periods) is created from the BRD and shared with stakeholders.\n• Each open question is assigned an owner (internal or external) and a due date, and its status is tracked through agreed governance forums.\n• Discovery session outputs for Jaywan mono-badged and co-badged cards are documented and linked back to the corresponding open questions and requirements.\n• Any clarified item that impacts scope or design is reflected in updated user stories or change requests with traceability to the original requirement.\n• The open question log is baselined before moving from analysis to build phase, with any unresolved critical items flagged as risks.",
+      "priority": "• High",
+      "effort_estimate": "• S",
+      "brd_reference": "• Discovery and Additional Requirement Capture, Open Questions 1–14",
+      "version": "• v1.0"
+    },
+    {
+      "story_id": "US-013",
+      "title": "Align Jaywan Processing with Existing Card Processing Enhancement",
+      "user_role": "• IT Applications Manager",
+      "description": "• As an IT Applications Manager, I want Jaywan-related enhancements to be aligned with the existing card processing enhancement requirement so that the card processing system supports enhanced transactions without disrupting current processing.",
+      "acceptance_criteria": "• Card processing enhancement scope (enhanced capabilities, error handling, availability targets) is reviewed alongside Jaywan requirements to identify overlaps and dependencies.\n• Test scenarios confirm that enhanced processing features work correctly for Jaywan transactions as well as non-Jaywan card transactions.\n• System performance targets (e.g., 1000+ users, 10,000 transactions/hour, 500,000 transactions/month, 99.9% availability) are demonstrably met in performance testing including Jaywan loads, as per non-functional requirements.\n• Error handling procedures for Jaywan transactions follow the generic card processing enhancement alternate flows and generate appropriate logs and alerts.\n• No regression is observed in existing non-Jaywan card processing functionalities post-implementation.",
+      "priority": "• Medium",
+      "effort_estimate": "• M",
+      "brd_reference": "• Card Processing Enhancement REQID1 (generic), Non-functional Requirements",
+      "version": "• v1.0"
+    },
+    {
+      "story_id": "US-014",
+      "title": "Implement Jaywan Operational SOP and Training",
+      "user_role": "• Operations Training Lead",
+      "description": "• As an Operations Training Lead, I want Jaywan-related SOPs and training material prepared and delivered to relevant teams so that Card Operations, Reconciliation, Contact Center, IT Support, Fraud/AML, and Branch staff can operate new Jaywan processes effectively.",
+      "acceptance_criteria": "• Updated SOPs for Card Operations, Reconciliation, Disputes, and Contact Center incorporating Jaywan-specific steps are created and approved by process owners.\n• Training material (user guides, slide decks, FAQs) covering Jaywan mono/co-badged products, routing behavior, reconciliation, disputes, and reporting is prepared.\n• At least one formal training session per impacted team (Card Ops, Reconciliation, Contact Center, IT Support, Fraud/AML, Branch) is delivered prior to go-live, with attendance captured.\n• Post-training assessments or feedback indicate that staff understand key Jaywan processes to an agreed threshold.\n• A plan for refresher or remedial training based on post-go-live issues and queries is documented.",
+      "priority": "• Medium",
+      "effort_estimate": "• M",
+      "brd_reference": "• Training Requirement (Non-functional Requirements)",
+      "version": "• v1.0"
+    },
+    {
+      "story_id": "US-015",
+      "title": "Implement Jaywan Access Control and Audit Logging",
+      "user_role": "• Information Security Officer",
+      "description": "• As an Information Security Officer, I want role-based access control and audit logging for Jaywan product setup, routing configuration, reconciliation, and dispute tools so that only authorized staff can make changes and all changes are traceable.",
+      "acceptance_criteria": "• Roles and access profiles for Product, IT, Operations, Finance, Risk, and Compliance related to Jaywan functions are defined in the bank’s access control matrix.\n• Systems managing Jaywan configuration (CMS, switch, routing tables, reconciliation, dispute tools, reporting) enforce least-privilege, role-based access.\n• All configuration changes related to Jaywan (e.g., routing rules, GL mappings, product parameters) are recorded in an audit log with user ID, timestamp, before/after values, and reason.\n• Security testing confirms that unauthorized users cannot access Jaywan-specific configuration screens or functions.\n• Periodic access review for Jaywan-related roles is conducted and documented as part of standard access governance.",
+      "priority": "• High",
+      "effort_estimate": "• M",
+      "brd_reference": "• Access Requirement (Non-functional Requirements)",
+      "version": "• v1.0"
+    },
+    {
+      "story_id": "US-016",
+      "title": "Apply Jaywan Security and Data Retention Controls",
+      "user_role": "• Chief Information Security Officer",
+      "description": "• As the Chief Information Security Officer, I want Jaywan card processing, interfaces, and data storage to comply with PCI-DSS, CBUAE/AEP security expectations, and mandated data retention so that Jaywan data is protected and auditable.",
+      "acceptance_criteria": "• All Jaywan interfaces with AEP, TSPs, and wallet providers use approved encryption protocols (e.g., TLS 1.2+) as per bank standards.\n• PCI-DSS controls applied to existing card processing (encryption, PAN masking, key management, access controls) are demonstrated to apply equally to Jaywan data flows.\n• Logs and transaction records for Jaywan are retained in line with CBUAE and local law requirements, with any gaps in definitive retention periods flagged as open questions awaiting regulatory confirmation.\n• Security monitoring rules are updated to include Jaywan-specific endpoints and traffic patterns, with alerts generated on anomalous activity.\n• Strong customer authentication requirements for Jaywan e-commerce and wallet transactions are implemented in line with CBUAE/AEP mandates.",
+      "priority": "• High",
+      "effort_estimate": "• L",
+      "brd_reference": "• Security Requirement and Data Requirement (Non-functional Requirements)",
+      "version": "• v1.0"
+    },
+    {
+      "story_id": "US-017",
+      "title": "Implement Jaywan Non-Functional Capacity and Availability Targets",
+      "user_role": "• IT Infrastructure Manager",
+      "description": "• As an IT Infrastructure Manager, I want capacity and availability targets for Jaywan authorization, CMS, reconciliation, and disputes to be defined and tested so that Jaywan services meet the bank’s critical payments SLAs.",
+      "acceptance_criteria": "• Non-functional requirements for Jaywan are documented, including user base assumptions (all existing and new Jaywan cardholders), peak TPS, daily volumes, monthly volumes, and availability targets, with explicit open questions noted where sizing input is pending.\n• Performance tests demonstrate the system can support at least current domestic Visa/Mastercard load plus defined headroom for Jaywan migration, aligned with test volumes (e.g., 10,000 transactions/hour and 500,000 transactions/month where applicable from existing NFRs).\n• Availability design for Jaywan authorization and routing components evidences 99.9% availability target (excluding maintenance), and 99.5% availability for back-office functions during business hours.\n• Monitoring dashboards and alerts for Jaywan components are configured to track performance and availability KPIs.\n• Any capacity assumptions dependent on unresolved open questions are recorded with associated risk and mitigation approach.",
+      "priority": "• High",
+      "effort_estimate": "• L",
+      "brd_reference": "• Non-functional Requirements (Users, Peak Volume, Monthly Volume, Availability)",
+      "version": "• v1.0"
+    }
+  ],
+  "epics": [
+    {
+      "epic_id": "EP-001",
+      "title": "• Jaywan Product Enablement (Mono and Co-Badged Cards)",
+      "description": "• Enable Jaywan mono-badged and co-badged card products in CMS and ensure alignment with CBUAE/AEP mandates and existing card processing.",
+      "related_stories": [
+        "US-001",
+        "US-002",
+        "US-003",
+        "US-013"
+      ]
+    },
+    {
+      "epic_id": "EP-002",
+      "title": "• Jaywan Routing, E-commerce, and Tokenization",
+      "description": "• Implement domestic routing logic and digital channel integration so that Jaywan is used for ATM, POS, e-commerce, and tokenized transactions where applicable.",
+      "related_stories": [
+        "US-004",
+        "US-005",
+        "US-009"
+      ]
+    },
+    {
+      "epic_id": "EP-003",
+      "title": "• Jaywan Finance, Reconciliation, and Reporting",
+      "description": "• Implement reconciliation, GL posting, and reporting capabilities to support accurate financial accounting and regulatory submissions for Jaywan.",
+      "related_stories": [
+        "US-006",
+        "US-008",
+        "US-017"
+      ]
+    },
+    {
+      "epic_id": "EP-004",
+      "title": "• Jaywan Risk, Fraud, AML, and Security",
+      "description": "• Integrate Jaywan into fraud, AML, and security controls to ensure compliant and secure operations.",
+      "related_stories": [
+        "US-001",
+        "US-007",
+        "US-010",
+        "US-015",
+        "US-016"
+      ]
+    },
+    {
+      "epic_id": "EP-005",
+      "title": "• Jaywan Operations, Training, and Customer Communication",
+      "description": "• Prepare operational teams and customers for Jaywan through updated SOPs, training, and communication.",
+      "related_stories": [
+        "US-007",
+        "US-008",
+        "US-011",
+        "US-014"
+      ]
+    },
+    {
+      "epic_id": "EP-006",
+      "title": "• Jaywan Discovery and Dependency Management",
+      "description": "• Capture and manage all open questions and dependencies with AEP, CBUAE, and internal stakeholders for Jaywan implementation.",
+      "related_stories": [
+        "US-012",
+        "US-017"
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "story_id": "US-002",
+      "depends_on": "US-001",
+      "dependency_type": "• Business"
+    },
+    {
+      "story_id": "US-003",
+      "depends_on": "US-001",
+      "dependency_type": "• Business"
+    },
+    {
+      "story_id": "US-004",
+      "depends_on": "US-002",
+      "dependency_type": "• Technical"
+    },
+    {
+      "story_id": "US-004",
+      "depends_on": "US-003",
+      "dependency_type": "• Technical"
+    },
+    {
+      "story_id": "US-005",
+      "depends_on": "US-004",
+      "dependency_type": "• Technical"
+    },
+    {
+      "story_id": "US-006",
+      "depends_on": "US-012",
+      "dependency_type": "• Data"
+    },
+    {
+      "story_id": "US-007",
+      "depends_on": "US-012",
+      "dependency_type": "• Business"
+    },
+    {
+      "story_id": "US-008",
+      "depends_on": "US-006",
+      "dependency_type": "• Data"
+    },
+    {
+      "story_id": "US-009",
+      "depends_on": "US-002",
+      "dependency_type": "• Technical"
+    },
+    {
+      "story_id": "US-009",
+      "depends_on": "US-003",
+      "dependency_type": "• Technical"
+    },
+    {
+      "story_id": "US-010",
+      "depends_on": "US-002",
+      "dependency_type": "• Data"
+    },
+    {
+      "story_id": "US-010",
+      "depends_on": "US-003",
+      "dependency_type": "• Data"
+    },
+    {
+      "story_id": "US-013",
+      "depends_on": "US-017",
+      "dependency_type": "• Technical"
+    },
+    {
+      "story_id": "US-015",
+      "depends_on": "US-016",
+      "dependency_type": "• Technical"
+    },
+    {
+      "story_id": "US-014",
+      "depends_on": "US-002",
+      "dependency_type": "• Business"
+    },
+    {
+      "story_id": "US-014",
+      "depends_on": "US-003",
+      "dependency_type": "• Business"
+    },
+    {
+      "story_id": "US-011",
+      "depends_on": "US-002",
+      "dependency_type": "• Business"
+    },
+    {
+      "story_id": "US-011",
+      "depends_on": "US-003",
+      "dependency_type": "• Business"
+    }
+  ]
+}

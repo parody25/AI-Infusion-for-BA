@@ -16,10 +16,12 @@ from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.core import VectorStoreIndex, load_index_from_storage, StorageContext, Settings
 from llama_index.core.node_parser import MarkdownElementNodeParser
 from services.openai_brd_service import OpenAIBRDService
+from services.openai_user_stories_service import OpenAIUserStoriesService
 from typing import List, Dict
 from email import policy
 from email.parser import BytesParser
 from brd_schema import BRD_SCHEMA_JSON_STRING
+from user_stories_schema import USER_STORIES_SCHEMA_JSON_STRING
 from document_download_routes import doc_download_router
 
 load_dotenv()
@@ -656,6 +658,241 @@ async def delete_project_brd(project_id: str, brd_id: str):
 async def get_brd_template():
     """Get the BRD template structure."""
     return JSONResponse(content={"template": BRD_TEMPLATE})
+
+class UserStoriesGenerationRequest(BaseModel):
+    brd_id: str
+    version: str
+
+@app.post("/projects/{project_id}/generate_user_stories")
+async def generate_user_stories_for_project(project_id: str, request_data: UserStoriesGenerationRequest):
+    """Generate User Stories for a specific BRD version, store it in the project, and return metadata."""
+    brd_id = request_data.brd_id
+    version = request_data.version
+    
+    print(f"DEBUG: Starting User Stories generation for project {project_id}")
+    print(f"DEBUG: BRD ID: {brd_id}")
+    print(f"DEBUG: Version: {version}")
+
+    project_path = get_project_path(project_id)
+    if not os.path.exists(project_path):
+        raise HTTPException(status_code=404, detail="BRD project not found")
+
+    # Check if project has BRDs
+    metadata = load_project_metadata(project_id)
+    brds = metadata.get("brds", [])
+
+    # Find the specific BRD
+    brd_info = None
+    for brd in brds:
+        if brd["id"] == brd_id:
+            brd_info = brd
+            break
+
+    if not brd_info:
+        raise HTTPException(status_code=404, detail="BRD not found in project")
+
+    # Read the BRD content
+    file_path = brd_info["file_path"]
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="BRD file not found on disk")
+
+    # Extract text content from the BRD document
+    try:
+        from docx import Document
+        doc = Document(file_path)
+        brd_content = []
+        for para in doc.paragraphs:
+            if para.text.strip():
+                brd_content.append(para.text)
+        for table in doc.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    for para in cell.paragraphs:
+                        if para.text.strip():
+                            brd_content.append(para.text)
+        
+        brd_text = "\n".join(brd_content)
+        print(f"DEBUG: Extracted BRD content length: {len(brd_text)} characters")
+    except Exception as e:
+        print(f"ERROR: Failed to extract text from BRD: {e}")
+        raise HTTPException(status_code=500, detail=f"Error reading BRD file: {str(e)}")
+
+    if not brd_text.strip():
+        raise HTTPException(status_code=400, detail="BRD content is empty")
+
+    print("DEBUG: Calling User Stories service to generate content")
+
+    # Create User Stories directory in project
+    user_stories_dir = os.path.join(project_path, "user_stories")
+    os.makedirs(user_stories_dir, exist_ok=True)
+
+    # Generate unique User Stories ID and filename
+    user_stories_id = str(uuid.uuid4())
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    output_filename = f"User_Stories_{timestamp}_{user_stories_id[:8]}.xlsx"
+    output_path = os.path.join(user_stories_dir, output_filename)
+
+    # Initialize User Stories service
+    user_stories_service = OpenAIUserStoriesService()
+
+    # Create BRD embeddings for RAG pipeline if they don't exist
+    brd_embeddings_dir = os.path.join(project_path, "brd_embeddings")
+    os.makedirs(brd_embeddings_dir, exist_ok=True)
+    brd_embeddings_file = os.path.join(brd_embeddings_dir, f"{brd_id}_embeddings")
+
+    print(f"DEBUG: Checking for existing BRD embeddings at {brd_embeddings_file}")
+    
+    # Create embeddings if they don't exist
+    if not os.path.exists(brd_embeddings_file):
+        print(f"DEBUG: Creating new BRD embeddings for {brd_info['filename']}")
+        success = user_stories_service.create_brd_embeddings(file_path, brd_embeddings_file)
+        if not success:
+            print("WARNING: Failed to create BRD embeddings, will use direct text extraction")
+    else:
+        print(f"DEBUG: Using existing BRD embeddings for {brd_info['filename']}")
+
+    # Retrieve context using RAG if embeddings exist
+    if os.path.exists(brd_embeddings_file):
+        print("DEBUG: Using RAG to retrieve relevant BRD context")
+        rag_context = user_stories_service.retrieve_brd_context(
+            brd_embeddings_file, 
+            f"Generate user stories for version {version}", 
+            top_k=30
+        )
+        
+        if rag_context.strip():
+            print(f"DEBUG: RAG context length: {len(rag_context)} characters")
+            # Combine RAG context with direct text extraction for comprehensive coverage
+            combined_content = f"=== RAG RETRIEVED CONTEXT ===\n{rag_context}\n\n=== FULL BRD CONTENT ===\n{brd_text}"
+        else:
+            print("DEBUG: RAG context empty, using direct text extraction only")
+            combined_content = brd_text
+    else:
+        print("DEBUG: No embeddings available, using direct text extraction only")
+        combined_content = brd_text
+
+    # Generate and export User Stories to Excel
+    try:
+        filled_path = user_stories_service.generate_user_stories_excel(
+            brd_content=combined_content,
+            version=version,
+            schema_json=USER_STORIES_SCHEMA_JSON_STRING,
+            output_path=output_path
+        )
+        print(f"DEBUG: User Stories generated successfully at {filled_path}")
+    except Exception as e:
+        print(f"ERROR: Failed to generate User Stories: {e}")
+        raise HTTPException(status_code=500, detail=f"Error generating User Stories: {str(e)}")
+
+    # Record User Stories in project metadata
+    user_stories_info = {
+        "id": user_stories_id,
+        "filename": output_filename,
+        "file_path": output_path,
+        "generated_at": datetime.now().isoformat(),
+        "brd_id": brd_id,
+        "version": version,
+        "brd_filename": brd_info["filename"]
+    }
+
+    # Ensure user_stories array exists in metadata
+    if "user_stories" not in metadata:
+        metadata["user_stories"] = []
+    
+    metadata["user_stories"].append(user_stories_info)
+    save_project_metadata(project_id, metadata)
+
+    print(f"DEBUG: User Stories recorded in metadata: {user_stories_id}")
+
+    return JSONResponse(content={
+        "message": "User Stories generated and stored successfully",
+        "user_stories_id": user_stories_id,
+        "filename": output_filename,
+        "brd_filename": brd_info["filename"],
+        "version": version,
+        "generated_at": user_stories_info["generated_at"]
+    })
+
+@app.get("/projects/{project_id}/user_stories")
+async def list_project_user_stories(project_id: str):
+    """List all User Stories generated for a project."""
+    project_path = get_project_path(project_id)
+    if not os.path.exists(project_path):
+        raise HTTPException(status_code=404, detail="BRD project not found")
+
+    metadata = load_project_metadata(project_id)
+    user_stories = metadata.get("user_stories", [])
+
+    # Add BRD filenames for better UX
+    brds = metadata.get("brds", [])
+    brd_id_to_filename = {brd["id"]: brd["filename"] for brd in brds}
+
+    for us in user_stories:
+        brd_filename = brd_id_to_filename.get(us.get("brd_id"), f"Unknown BRD (ID: {us.get('brd_id')})")
+        us["brd_filename"] = brd_filename
+
+    return JSONResponse(content={"user_stories": user_stories})
+
+@app.get("/projects/{project_id}/user_stories/{user_stories_id}/download")
+async def download_project_user_stories(project_id: str, user_stories_id: str):
+    """Download a specific User Stories Excel file from a project."""
+    project_path = get_project_path(project_id)
+    if not os.path.exists(project_path):
+        raise HTTPException(status_code=404, detail="BRD project not found")
+
+    metadata = load_project_metadata(project_id)
+    user_stories = metadata.get("user_stories", [])
+
+    # Find the User Stories
+    user_stories_info = None
+    for us in user_stories:
+        if us["id"] == user_stories_id:
+            user_stories_info = us
+            break
+
+    if not user_stories_info:
+        raise HTTPException(status_code=404, detail="User Stories not found in project")
+
+    file_path = user_stories_info["file_path"]
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="User Stories file not found on disk")
+
+    return FileResponse(
+        path=file_path,
+        filename=user_stories_info["filename"],
+        media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+
+@app.delete("/projects/{project_id}/user_stories/{user_stories_id}")
+async def delete_project_user_stories(project_id: str, user_stories_id: str):
+    """Delete a User Stories file from a project."""
+    project_path = get_project_path(project_id)
+    if not os.path.exists(project_path):
+        raise HTTPException(status_code=404, detail="BRD project not found")
+
+    metadata = load_project_metadata(project_id)
+    user_stories = metadata.get("user_stories", [])
+
+    # Find and remove User Stories from metadata
+    us_to_remove = None
+    for us in user_stories:
+        if us["id"] == user_stories_id:
+            us_to_remove = us
+            break
+
+    if not us_to_remove:
+        raise HTTPException(status_code=404, detail="User Stories not found in project")
+
+    # Remove the file if it exists
+    file_path = us_to_remove.get("file_path")
+    if file_path and os.path.exists(file_path):
+        os.remove(file_path)
+
+    # Remove from metadata
+    metadata["user_stories"].remove(us_to_remove)
+    save_project_metadata(project_id, metadata)
+
+    return JSONResponse(content={"message": "User Stories deleted successfully"})
 
 @app.get("/health")
 async def health_check():

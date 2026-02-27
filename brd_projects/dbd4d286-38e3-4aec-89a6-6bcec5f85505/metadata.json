@@ -647,5 +647,25 @@
       ],
       "document_count": 9
     }
+  ],
+  "user_stories": [
+    {
+      "id": "f728fdc6-a2d8-419d-9a4b-f1dda2f9c01a",
+      "filename": "User_Stories_20260227_071950_f728fdc6.xlsx",
+      "file_path": "brd_projects\\dbd4d286-38e3-4aec-89a6-6bcec5f85505\\user_stories\\User_Stories_20260227_071950_f728fdc6.xlsx",
+      "generated_at": "2026-02-27T07:22:41.482433",
+      "brd_id": "9c6f7b8e-52df-4f3b-a359-d48c65c5b861",
+      "version": "v1.0",
+      "brd_filename": "BRD_20260123_065625_9c6f7b8e.docx"
+    },
+    {
+      "id": "305b12e8-39d2-487b-a547-88ebed316933",
+      "filename": "User_Stories_20260227_073205_305b12e8.xlsx",
+      "file_path": "brd_projects\\dbd4d286-38e3-4aec-89a6-6bcec5f85505\\user_stories\\User_Stories_20260227_073205_305b12e8.xlsx",
+      "generated_at": "2026-02-27T07:33:31.668510",
+      "brd_id": "9c6f7b8e-52df-4f3b-a359-d48c65c5b861",
+      "version": "v1.0",
+      "brd_filename": "BRD_20260123_065625_9c6f7b8e.docx"
+    }
   ]
 }
