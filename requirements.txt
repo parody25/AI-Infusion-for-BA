@@ -11,3 +11,5 @@ llama-index-embeddings-openai
 python-docx
 pandas
 openpyxl
+jira
+requests

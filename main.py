@@ -17,6 +17,7 @@ from llama_index.core import VectorStoreIndex, load_index_from_storage, StorageC
 from llama_index.core.node_parser import MarkdownElementNodeParser
 from services.openai_brd_service import OpenAIBRDService
 from services.openai_user_stories_service import OpenAIUserStoriesService
+from services.jira_service import JiraService, get_jira_config, JiraConfig
 from typing import List, Dict
 from email import policy
 from email.parser import BytesParser
@@ -897,6 +898,202 @@ async def delete_project_user_stories(project_id: str, user_stories_id: str):
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
+
+# Jira Integration Endpoints
+
+@app.get("/jira/config")
+async def get_jira_config_status():
+    """Get current Jira configuration status."""
+    config = get_jira_config()
+    if config:
+        return JSONResponse(content={
+            "configured": True,
+            "server": config.server,
+            "email": config.email,
+            "default_project": config.default_project
+        })
+    else:
+        return JSONResponse(content={
+            "configured": False,
+            "message": "Jira is not configured. Please set JIRA_SERVER, JIRA_EMAIL, and JIRA_API_TOKEN environment variables."
+        })
+
+@app.post("/jira/test-connection")
+async def test_jira_connection():
+    """Test Jira connection with current configuration."""
+    config = get_jira_config()
+    if not config:
+        raise HTTPException(status_code=400, detail="Jira is not configured")
+    
+    jira_service = JiraService(config)
+    result = jira_service.test_connection()
+    
+    if result["success"]:
+        return JSONResponse(content=result)
+    else:
+        raise HTTPException(status_code=500, detail=result["message"])
+
+@app.get("/jira/projects")
+async def get_jira_projects():
+    """Get list of available Jira projects."""
+    config = get_jira_config()
+    if not config:
+        raise HTTPException(status_code=400, detail="Jira is not configured")
+    
+    jira_service = JiraService(config)
+    projects = jira_service.get_projects()
+    
+    if not projects:
+        raise HTTPException(status_code=500, detail="Failed to retrieve projects")
+    
+    return JSONResponse(content={"projects": projects})
+
+@app.get("/jira/issue-types")
+async def get_jira_issue_types():
+    """Get list of available Jira issue types."""
+    config = get_jira_config()
+    if not config:
+        raise HTTPException(status_code=400, detail="Jira is not configured")
+    
+    jira_service = JiraService(config)
+    issue_types = jira_service.get_issue_types()
+    
+    if not issue_types:
+        raise HTTPException(status_code=500, detail="Failed to retrieve issue types")
+    
+    return JSONResponse(content={"issue_types": issue_types})
+
+class JiraSyncRequest(BaseModel):
+    jira_url: Optional[str] = None
+    project_key: Optional[str] = None
+    auth_token: Optional[str] = None
+
+@app.post("/projects/{project_id}/user_stories/{user_stories_id}/jira-sync")
+async def sync_user_stories_to_jira(project_id: str, user_stories_id: str, request_data: JiraSyncRequest):
+    """Sync User Stories to Jira."""
+    # Check if project exists
+    project_path = get_project_path(project_id)
+    if not os.path.exists(project_path):
+        raise HTTPException(status_code=404, detail="BRD project not found")
+
+    # Load project metadata
+    metadata = load_project_metadata(project_id)
+    user_stories = metadata.get("user_stories", [])
+
+    # Find the User Stories
+    user_stories_info = None
+    for us in user_stories:
+        if us["id"] == user_stories_id:
+            user_stories_info = us
+            break
+
+    if not user_stories_info:
+        raise HTTPException(status_code=404, detail="User Stories not found in project")
+
+    file_path = user_stories_info["file_path"]
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="User Stories file not found on disk")
+
+    # Load User Stories data from Excel
+    try:
+        import pandas as pd
+        excel_data = pd.read_excel(file_path, sheet_name=None)
+        
+        # Process User Stories sheet
+        stories_data = []
+        if 'User Stories' in excel_data:
+            stories_df = excel_data['User Stories']
+            for _, row in stories_df.iterrows():
+                stories_data.append({
+                    "type": "user_story",
+                    "story_id": row.get('story_id', ''),
+                    "title": row.get('title', ''),
+                    "user_role": row.get('user_role', ''),
+                    "description": row.get('description', ''),
+                    "acceptance_criteria": row.get('acceptance_criteria', ''),
+                    "priority": row.get('priority', 'Medium'),
+                    "effort_estimate": row.get('effort_estimate', None),
+                    "brd_reference": row.get('brd_reference', ''),
+                    "version": row.get('version', '')
+                })
+
+        # Process Epics sheet
+        epics_data = []
+        if 'Epics' in excel_data:
+            epics_df = excel_data['Epics']
+            for _, row in epics_df.iterrows():
+                epics_data.append({
+                    "type": "epic",
+                    "epic_id": row.get('epic_id', ''),
+                    "title": row.get('title', ''),
+                    "description": row.get('description', ''),
+                    "related_stories": row.get('related_stories', [])
+                })
+
+        # Process Dependencies sheet
+        dependencies_data = []
+        if 'Dependencies' in excel_data:
+            deps_df = excel_data['Dependencies']
+            for _, row in deps_df.iterrows():
+                dependencies_data.append({
+                    "type": "dependency",
+                    "story_id": row.get('story_id', ''),
+                    "depends_on": row.get('depends_on', ''),
+                    "dependency_type": row.get('dependency_type', 'Blocks')
+                })
+
+        all_issues = stories_data + epics_data + dependencies_data
+        
+    except Exception as e:
+        print(f"ERROR: Failed to read User Stories Excel file: {e}")
+        raise HTTPException(status_code=500, detail=f"Error reading User Stories file: {str(e)}")
+
+    # Initialize Jira service
+    jira_config = get_jira_config()
+    
+    # Override config if provided in request
+    if request_data.jira_url and request_data.project_key and request_data.auth_token:
+        jira_config = JiraConfig(
+            server=request_data.jira_url,
+            email="temp@temp.com",  # Will be overridden
+            api_token=request_data.auth_token,
+            default_project=request_data.project_key
+        )
+    elif not jira_config:
+        raise HTTPException(status_code=400, detail="Jira is not configured and no credentials provided")
+
+    jira_service = JiraService(jira_config)
+    
+    # Test connection
+    connection_result = jira_service.test_connection()
+    if not connection_result["success"]:
+        raise HTTPException(status_code=500, detail=connection_result["message"])
+
+    # Use project key from request or config
+    project_key = request_data.project_key or jira_config.default_project
+    if not project_key:
+        raise HTTPException(status_code=400, detail="Project key not specified")
+
+    # Bulk create issues
+    try:
+        results = jira_service.bulk_create_issues(project_key, all_issues)
+        
+        # Update User Stories metadata with sync status
+        user_stories_info["jira_sync_status"] = "completed"
+        user_stories_info["jira_sync_at"] = datetime.now().isoformat()
+        user_stories_info["jira_sync_results"] = results
+        save_project_metadata(project_id, metadata)
+
+        return JSONResponse(content={
+            "message": "User Stories synced to Jira successfully",
+            "sync_results": results,
+            "project_key": project_key,
+            "user_stories_id": user_stories_id
+        })
+        
+    except Exception as e:
+        print(f"ERROR: Failed to sync to Jira: {e}")
+        raise HTTPException(status_code=500, detail=f"Error syncing to Jira: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
