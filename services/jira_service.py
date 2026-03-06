@@ -202,8 +202,12 @@ class JiraService:
     def create_user_story(self, project_key: str, title: str, description: str,
                          acceptance_criteria: str, priority: str = "Medium",
                          story_points: Optional[int] = None,
-                         epic_key: Optional[str] = None) -> Optional[Dict[str, Any]]:
-        """Create a User Story in Jira."""
+                         epic_key: Optional[str] = None,
+                         user_role: Optional[str] = None,
+                         brd_reference: Optional[str] = None,
+                         story_id: Optional[str] = None,
+                         version: Optional[str] = None) -> Optional[Dict[str, Any]]:
+        """Create a User Story in Jira with custom fields."""
         try:
             if not self._ensure_connected():
                 return None
@@ -226,6 +230,19 @@ class JiraService:
             # Add story points if provided
             if story_points is not None:
                 issue_dict['customfield_10016'] = story_points  # Story Points field
+            
+            # Get custom field IDs and set custom fields
+            custom_fields = self._get_custom_field_ids()
+            
+            # Set custom fields if they exist and values are provided
+            if story_id and 'story_id' in custom_fields:
+                issue_dict[custom_fields['story_id']] = story_id
+            if user_role and 'user_role' in custom_fields:
+                issue_dict[custom_fields['user_role']] = user_role
+            if brd_reference and 'brd_reference' in custom_fields:
+                issue_dict[custom_fields['brd_reference']] = brd_reference
+            if version and 'version' in custom_fields:
+                issue_dict[custom_fields['version']] = version
             
             new_issue = self.jira_client.create_issue(fields=issue_dict)
             logger.info(f"Created User Story: {new_issue.key}")
@@ -320,7 +337,12 @@ class JiraService:
         try:
             if not self._ensure_connected():
                 return None
+            
+            # Get project-specific issue types
+            project = self.jira_client.project(project_key)
             issue_types = self.jira_client.issue_types()
+            
+            # Filter issue types that are available for this project
             for issue_type in issue_types:
                 if issue_type.name.lower() == issue_type_name.lower():
                     return issue_type.id
@@ -329,7 +351,7 @@ class JiraService:
             return None
     
     def _get_epic_link_field_id(self) -> Optional[str]:
-        """Get the Epic Link custom field ID."""
+        """Get the Epic Link custom field ID.""" 
         try:
             if not self._ensure_connected():
                 return None
@@ -340,6 +362,27 @@ class JiraService:
             return None
         except JIRAError:
             return None
+    
+    def _get_custom_field_ids(self) -> Dict[str, str]:
+        """Get custom field IDs for the custom fields we want to use."""
+        try:
+            if not self._ensure_connected():
+                return {}
+            fields = self.jira_client.fields()
+            custom_fields = {}
+            
+            # Map field names to their IDs
+            field_name_to_id = {field['name']: field['id'] for field in fields}
+            
+            # Look for our custom fields
+            custom_field_names = ['story_id', 'user_role', 'brd_reference', 'version']
+            for field_name in custom_field_names:
+                if field_name in field_name_to_id:
+                    custom_fields[field_name] = field_name_to_id[field_name]
+            
+            return custom_fields
+        except JIRAError:
+            return {}
     
     def bulk_create_issues(self, project_key: str, issues_data: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Bulk create issues from User Stories data."""
@@ -399,7 +442,11 @@ class JiraService:
                     acceptance_criteria=issue_data.get("acceptance_criteria", ""),
                     priority=issue_data.get("priority", "Medium"),
                     story_points=issue_data.get("effort_estimate"),
-                    epic_key=epic_key
+                    epic_key=epic_key,
+                    user_role=issue_data.get("user_role"),
+                    brd_reference=issue_data.get("brd_reference"),
+                    story_id=issue_data.get("story_id"),
+                    version=issue_data.get("version")
                 )
                 if story:
                     results["success"].append(story)

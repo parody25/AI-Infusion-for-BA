@@ -971,14 +971,19 @@ class JiraSyncRequest(BaseModel):
 @app.post("/projects/{project_id}/user_stories/{user_stories_id}/jira-sync")
 async def sync_user_stories_to_jira(project_id: str, user_stories_id: str, request_data: JiraSyncRequest):
     """Sync User Stories to Jira."""
+    print(f"🔍 DEBUG: Received sync request for project {project_id}, user stories {user_stories_id}")
+    print(f"🔍 DEBUG: Request data: {request_data}")
+    
     # Check if project exists
     project_path = get_project_path(project_id)
     if not os.path.exists(project_path):
+        print(f"🔍 DEBUG: Project path {project_path} does not exist")
         raise HTTPException(status_code=404, detail="BRD project not found")
 
     # Load project metadata
     metadata = load_project_metadata(project_id)
     user_stories = metadata.get("user_stories", [])
+    print(f"🔍 DEBUG: Found {len(user_stories)} user stories in project")
 
     # Find the User Stories
     user_stories_info = None
@@ -988,10 +993,13 @@ async def sync_user_stories_to_jira(project_id: str, user_stories_id: str, reque
             break
 
     if not user_stories_info:
+        print(f"🔍 DEBUG: User Stories {user_stories_id} not found in project")
         raise HTTPException(status_code=404, detail="User Stories not found in project")
 
     file_path = user_stories_info["file_path"]
+    print(f"🔍 DEBUG: User Stories file path: {file_path}")
     if not os.path.exists(file_path):
+        print(f"🔍 DEBUG: User Stories file does not exist at {file_path}")
         raise HTTPException(status_code=404, detail="User Stories file not found on disk")
 
     # Load User Stories data from Excel
@@ -1053,9 +1061,13 @@ async def sync_user_stories_to_jira(project_id: str, user_stories_id: str, reque
     
     # Override config if provided in request
     if request_data.jira_url and request_data.project_key and request_data.auth_token:
+        # Use environment email if available, otherwise use a placeholder
+        env_email = os.getenv("JIRA_EMAIL", "")
+        frontend_email = env_email if env_email else "temp@temp.com"
+        
         jira_config = JiraConfig(
             server=request_data.jira_url,
-            email="temp@temp.com",  # Will be overridden
+            email=frontend_email,
             api_token=request_data.auth_token,
             default_project=request_data.project_key
         )
@@ -1076,7 +1088,14 @@ async def sync_user_stories_to_jira(project_id: str, user_stories_id: str, reque
 
     # Bulk create issues
     try:
+        print(f"🔍 DEBUG: Starting bulk create with {len(all_issues)} issues")
+        print(f"🔍 DEBUG: Project key: {project_key}")
+        print(f"🔍 DEBUG: Issues to create: {[issue.get('type', 'unknown') + ': ' + issue.get('title', 'no title') for issue in all_issues]}")
+        
         results = jira_service.bulk_create_issues(project_key, all_issues)
+        
+        print(f"🔍 DEBUG: Bulk create completed")
+        print(f"🔍 DEBUG: Success: {len(results.get('success', []))}, Failed: {len(results.get('failed', []))}")
         
         # Update User Stories metadata with sync status
         user_stories_info["jira_sync_status"] = "completed"
@@ -1093,6 +1112,8 @@ async def sync_user_stories_to_jira(project_id: str, user_stories_id: str, reque
         
     except Exception as e:
         print(f"ERROR: Failed to sync to Jira: {e}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Error syncing to Jira: {str(e)}")
 
 if __name__ == "__main__":

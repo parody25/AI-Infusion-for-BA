@@ -656,7 +656,188 @@
       "generated_at": "2026-02-27T07:22:41.482433",
       "brd_id": "9c6f7b8e-52df-4f3b-a359-d48c65c5b861",
       "version": "v1.0",
-      "brd_filename": "BRD_20260123_065625_9c6f7b8e.docx"
+      "brd_filename": "BRD_20260123_065625_9c6f7b8e.docx",
+      "jira_sync_status": "completed",
+      "jira_sync_at": "2026-03-05T10:36:50.177929",
+      "jira_sync_results": {
+        "success": [
+          {
+            "issue_key": "JAYW-4",
+            "issue_id": "10207",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-4",
+            "type": "Epic"
+          },
+          {
+            "issue_key": "JAYW-5",
+            "issue_id": "10208",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-5",
+            "type": "Epic"
+          },
+          {
+            "issue_key": "JAYW-6",
+            "issue_id": "10209",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-6",
+            "type": "Epic"
+          },
+          {
+            "issue_key": "JAYW-7",
+            "issue_id": "10210",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-7",
+            "type": "Epic"
+          },
+          {
+            "issue_key": "JAYW-8",
+            "issue_id": "10211",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-8",
+            "type": "Epic"
+          },
+          {
+            "issue_key": "JAYW-9",
+            "issue_id": "10212",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-9",
+            "type": "Epic"
+          },
+          {
+            "issue_key": "JAYW-10",
+            "issue_id": "10213",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-10",
+            "type": "Epic"
+          }
+        ],
+        "failed": [
+          {
+            "type": "user_story",
+            "title": "Ensure compliance with CBUAE Jaywan mandate for card issuance and routing",
+            "error": "Failed to create user story"
+          },
+          {
+            "type": "user_story",
+            "title": "Configure Jaywan mono-badged card product in CMS",
+            "error": "Failed to create user story"
+          },
+          {
+            "type": "user_story",
+            "title": "Implement lifecycle management for Jaywan mono-badged cards",
+            "error": "Failed to create user story"
+          },
+          {
+            "type": "user_story",
+            "title": "Set up Jaywan co-badged card products",
+            "error": "Failed to create user story"
+          },
+          {
+            "type": "user_story",
+            "title": "Implement routing logic for domestic and international transactions on co-badged cards",
+            "error": "Failed to create user story"
+          },
+          {
+            "type": "user_story",
+            "title": "Define handling rules for merchant category and geography-specific routing",
+            "error": "Failed to create user story"
+          },
+          {
+            "type": "user_story",
+            "title": "Integrate Jaywan e-commerce authorization via CBUAE DMS",
+            "error": "Failed to create user story"
+          },
+          {
+            "type": "user_story",
+            "title": "Implement Jaywan tokenized transaction processing including POS tokenized (if in scope)",
+            "error": "Failed to create user story"
+          },
+          {
+            "type": "user_story",
+            "title": "Set up Jaywan-specific GL accounts and mappings",
+            "error": "Failed to create user story"
+          },
+          {
+            "type": "user_story",
+            "title": "Implement reconciliation process for Jaywan settlement files",
+            "error": "Failed to create user story"
+          },
+          {
+            "type": "user_story",
+            "title": "Configure Jaywan dispute and chargeback workflows",
+            "error": "Failed to create user story"
+          },
+          {
+            "type": "user_story",
+            "title": "Enable refunds and reversals for Jaywan transactions",
+            "error": "Failed to create user story"
+          },
+          {
+            "type": "user_story",
+            "title": "Implement Jaywan regulatory and internal MIS reporting",
+            "error": "Failed to create user story"
+          },
+          {
+            "type": "user_story",
+            "title": "Create internal Jaywan performance dashboards",
+            "error": "Failed to create user story"
+          },
+          {
+            "type": "user_story",
+            "title": "Enable Jaywan cards on Samsung Wallet",
+            "error": "Failed to create user story"
+          },
+          {
+            "type": "user_story",
+            "title": "Document readiness requirements for future Google Pay and Apple Pay enablement",
+            "error": "Failed to create user story"
+          },
+          {
+            "type": "user_story",
+            "title": "Integrate Jaywan transactions into fraud monitoring",
+            "error": "Failed to create user story"
+          },
+          {
+            "type": "user_story",
+            "title": "Integrate Jaywan transactions into AML and sanctions screening",
+            "error": "Failed to create user story"
+          },
+          {
+            "type": "user_story",
+            "title": "Update customer communication for Jaywan products and routing",
+            "error": "Failed to create user story"
+          },
+          {
+            "type": "user_story",
+            "title": "Train staff on Jaywan products, processes, and tools",
+            "error": "Failed to create user story"
+          },
+          {
+            "type": "user_story",
+            "title": "Define and track open questions with CBUAE and AEP",
+            "error": "Failed to create user story"
+          },
+          {
+            "type": "user_story",
+            "title": "Implement role-based access and audit logging for Jaywan configuration and operations",
+            "error": "Failed to create user story"
+          },
+          {
+            "type": "user_story",
+            "title": "Ensure PCI-DSS and encryption compliance for Jaywan card data",
+            "error": "Failed to create user story"
+          },
+          {
+            "type": "user_story",
+            "title": "Implement Jaywan data retention and traceability",
+            "error": "Failed to create user story"
+          },
+          {
+            "type": "user_story",
+            "title": "Plan for Jaywan capacity and availability in line with NFRs",
+            "error": "Failed to create user story"
+          },
+          {
+            "type": "user_story",
+            "title": "Minimize manual interventions in Jaywan operational processes",
+            "error": "Failed to create user story"
+          }
+        ],
+        "total": 56
+      }
     },
     {
       "id": "305b12e8-39d2-487b-a547-88ebed316933",
