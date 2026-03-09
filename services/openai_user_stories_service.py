@@ -233,7 +233,15 @@ BRD Content:
             context_parts = []
             seen_text = set()
             for node in (global_nodes[:5] + local_nodes):
-                txt = node.get_content()
+                # Try multiple ways to get content
+                txt = None
+                if hasattr(node, 'get_content'):
+                    txt = node.get_content()
+                elif hasattr(node, 'text'):
+                    txt = node.text
+                elif hasattr(node, 'content'):
+                    txt = node.content
+                
                 if txt and txt not in seen_text:
                     context_parts.append(txt)
                     seen_text.add(txt)
@@ -377,8 +385,9 @@ BRD Content:
         all_epics = []
         all_deps = []
         
-        # Global counter strictly managed outside the LLM call
-        story_counter = 1 
+        # Global counters strictly managed outside the LLM call
+        story_counter = 1
+        epic_counter = 1
 
         # Create a "Foundation Context" (First 12k chars) to use if RAG fails
         foundation_context = brd_content[:12000]
@@ -416,14 +425,56 @@ BRD Content:
                 module_data = json.loads(raw_json)
                 
                 stories = module_data.get("user_stories", [])
+                # Create a mapping from module story IDs to global story IDs
+                story_id_mapping = {}
+                
                 for s in stories:
-                    s["story_id"] = f"US-{story_counter:03d}"
+                    old_story_id = s.get("story_id", f"US-{story_counter:03d}")
+                    new_story_id = f"US-{story_counter:03d}"
+                    s["story_id"] = new_story_id
                     s["version"] = version
                     story_counter += 1
                     all_stories_list.append(s)
+                    # Store mapping for epics and dependencies
+                    story_id_mapping[old_story_id] = new_story_id
 
-                all_epics.extend(module_data.get("epics", []))
-                all_deps.extend(module_data.get("dependencies", []))
+                # Process epics and update story IDs
+                module_epics = module_data.get("epics", [])
+                for epic in module_epics:
+                    # Update epic_id to be globally unique
+                    old_epic_id = epic.get("epic_id", f"EP-{epic_counter:03d}")
+                    new_epic_id = f"EP-{epic_counter:03d}"
+                    epic["epic_id"] = new_epic_id
+                    epic_counter += 1
+                    
+                    if "related_stories" in epic and isinstance(epic["related_stories"], list):
+                        # Map module story IDs to global story IDs
+                        mapped_stories = []
+                        for story_id in epic["related_stories"]:
+                            if story_id in story_id_mapping:
+                                mapped_stories.append(story_id_mapping[story_id])
+                            else:
+                                # If mapping not found, try to create a global ID
+                                # This handles cases where story IDs might be in different formats
+                                mapped_stories.append(story_id)
+                        epic["related_stories"] = mapped_stories
+                    all_epics.append(epic)
+
+                # Process dependencies and update story IDs
+                module_deps = module_data.get("dependencies", [])
+                for dep in module_deps:
+                    # Update story_id and depends_on fields
+                    if "story_id" in dep:
+                        old_story_id = dep["story_id"]
+                        if old_story_id in story_id_mapping:
+                            dep["story_id"] = story_id_mapping[old_story_id]
+                    
+                    if "depends_on" in dep:
+                        old_depends_on = dep["depends_on"]
+                        if old_depends_on in story_id_mapping:
+                            dep["depends_on"] = story_id_mapping[old_depends_on]
+                    
+                    all_deps.append(dep)
                 
                 print(f"DEBUG: Added {len(stories)} stories for {module_name}")
 
