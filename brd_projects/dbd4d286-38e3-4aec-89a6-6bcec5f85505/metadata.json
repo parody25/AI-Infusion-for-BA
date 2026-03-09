@@ -658,184 +658,209 @@
       "version": "v1.0",
       "brd_filename": "BRD_20260123_065625_9c6f7b8e.docx",
       "jira_sync_status": "completed",
-      "jira_sync_at": "2026-03-05T10:36:50.177929",
+      "jira_sync_at": "2026-03-09T11:32:27.769355",
       "jira_sync_results": {
         "success": [
           {
-            "issue_key": "JAYW-4",
-            "issue_id": "10207",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-4",
+            "issue_key": "JAYW-41",
+            "issue_id": "10355",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-41",
             "type": "Epic"
           },
           {
-            "issue_key": "JAYW-5",
-            "issue_id": "10208",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-5",
+            "issue_key": "JAYW-42",
+            "issue_id": "10356",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-42",
             "type": "Epic"
           },
           {
-            "issue_key": "JAYW-6",
-            "issue_id": "10209",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-6",
+            "issue_key": "JAYW-43",
+            "issue_id": "10357",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-43",
             "type": "Epic"
           },
           {
-            "issue_key": "JAYW-7",
-            "issue_id": "10210",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-7",
+            "issue_key": "JAYW-44",
+            "issue_id": "10358",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-44",
             "type": "Epic"
           },
           {
-            "issue_key": "JAYW-8",
-            "issue_id": "10211",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-8",
+            "issue_key": "JAYW-45",
+            "issue_id": "10359",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-45",
             "type": "Epic"
           },
           {
-            "issue_key": "JAYW-9",
-            "issue_id": "10212",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-9",
+            "issue_key": "JAYW-46",
+            "issue_id": "10360",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-46",
             "type": "Epic"
           },
           {
-            "issue_key": "JAYW-10",
-            "issue_id": "10213",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-10",
+            "issue_key": "JAYW-47",
+            "issue_id": "10361",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-47",
             "type": "Epic"
+          },
+          {
+            "issue_key": "JAYW-48",
+            "issue_id": "10362",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-48",
+            "type": "Story"
+          },
+          {
+            "issue_key": "JAYW-49",
+            "issue_id": "10363",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-49",
+            "type": "Story"
+          },
+          {
+            "issue_key": "JAYW-50",
+            "issue_id": "10364",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-50",
+            "type": "Story"
+          },
+          {
+            "issue_key": "JAYW-51",
+            "issue_id": "10365",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-51",
+            "type": "Story"
+          },
+          {
+            "issue_key": "JAYW-52",
+            "issue_id": "10366",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-52",
+            "type": "Story"
+          },
+          {
+            "issue_key": "JAYW-53",
+            "issue_id": "10367",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-53",
+            "type": "Story"
+          },
+          {
+            "issue_key": "JAYW-54",
+            "issue_id": "10368",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-54",
+            "type": "Story"
+          },
+          {
+            "issue_key": "JAYW-55",
+            "issue_id": "10369",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-55",
+            "type": "Story"
+          },
+          {
+            "issue_key": "JAYW-56",
+            "issue_id": "10370",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-56",
+            "type": "Story"
+          },
+          {
+            "issue_key": "JAYW-57",
+            "issue_id": "10371",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-57",
+            "type": "Story"
+          },
+          {
+            "issue_key": "JAYW-58",
+            "issue_id": "10372",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-58",
+            "type": "Story"
+          },
+          {
+            "issue_key": "JAYW-59",
+            "issue_id": "10373",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-59",
+            "type": "Story"
+          },
+          {
+            "issue_key": "JAYW-60",
+            "issue_id": "10374",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-60",
+            "type": "Story"
+          },
+          {
+            "issue_key": "JAYW-61",
+            "issue_id": "10375",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-61",
+            "type": "Story"
+          },
+          {
+            "issue_key": "JAYW-62",
+            "issue_id": "10376",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-62",
+            "type": "Story"
+          },
+          {
+            "issue_key": "JAYW-63",
+            "issue_id": "10377",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-63",
+            "type": "Story"
+          },
+          {
+            "issue_key": "JAYW-64",
+            "issue_id": "10378",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-64",
+            "type": "Story"
+          },
+          {
+            "issue_key": "JAYW-65",
+            "issue_id": "10379",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-65",
+            "type": "Story"
+          },
+          {
+            "issue_key": "JAYW-66",
+            "issue_id": "10380",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-66",
+            "type": "Story"
+          },
+          {
+            "issue_key": "JAYW-67",
+            "issue_id": "10381",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-67",
+            "type": "Story"
+          },
+          {
+            "issue_key": "JAYW-68",
+            "issue_id": "10382",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-68",
+            "type": "Story"
+          },
+          {
+            "issue_key": "JAYW-69",
+            "issue_id": "10383",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-69",
+            "type": "Story"
+          },
+          {
+            "issue_key": "JAYW-70",
+            "issue_id": "10384",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-70",
+            "type": "Story"
+          },
+          {
+            "issue_key": "JAYW-71",
+            "issue_id": "10385",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-71",
+            "type": "Story"
+          },
+          {
+            "issue_key": "JAYW-72",
+            "issue_id": "10386",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-72",
+            "type": "Story"
+          },
+          {
+            "issue_key": "JAYW-73",
+            "issue_id": "10387",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-73",
+            "type": "Story"
           }
         ],
-        "failed": [
-          {
-            "type": "user_story",
-            "title": "Ensure compliance with CBUAE Jaywan mandate for card issuance and routing",
-            "error": "Failed to create user story"
-          },
-          {
-            "type": "user_story",
-            "title": "Configure Jaywan mono-badged card product in CMS",
-            "error": "Failed to create user story"
-          },
-          {
-            "type": "user_story",
-            "title": "Implement lifecycle management for Jaywan mono-badged cards",
-            "error": "Failed to create user story"
-          },
-          {
-            "type": "user_story",
-            "title": "Set up Jaywan co-badged card products",
-            "error": "Failed to create user story"
-          },
-          {
-            "type": "user_story",
-            "title": "Implement routing logic for domestic and international transactions on co-badged cards",
-            "error": "Failed to create user story"
-          },
-          {
-            "type": "user_story",
-            "title": "Define handling rules for merchant category and geography-specific routing",
-            "error": "Failed to create user story"
-          },
-          {
-            "type": "user_story",
-            "title": "Integrate Jaywan e-commerce authorization via CBUAE DMS",
-            "error": "Failed to create user story"
-          },
-          {
-            "type": "user_story",
-            "title": "Implement Jaywan tokenized transaction processing including POS tokenized (if in scope)",
-            "error": "Failed to create user story"
-          },
-          {
-            "type": "user_story",
-            "title": "Set up Jaywan-specific GL accounts and mappings",
-            "error": "Failed to create user story"
-          },
-          {
-            "type": "user_story",
-            "title": "Implement reconciliation process for Jaywan settlement files",
-            "error": "Failed to create user story"
-          },
-          {
-            "type": "user_story",
-            "title": "Configure Jaywan dispute and chargeback workflows",
-            "error": "Failed to create user story"
-          },
-          {
-            "type": "user_story",
-            "title": "Enable refunds and reversals for Jaywan transactions",
-            "error": "Failed to create user story"
-          },
-          {
-            "type": "user_story",
-            "title": "Implement Jaywan regulatory and internal MIS reporting",
-            "error": "Failed to create user story"
-          },
-          {
-            "type": "user_story",
-            "title": "Create internal Jaywan performance dashboards",
-            "error": "Failed to create user story"
-          },
-          {
-            "type": "user_story",
-            "title": "Enable Jaywan cards on Samsung Wallet",
-            "error": "Failed to create user story"
-          },
-          {
-            "type": "user_story",
-            "title": "Document readiness requirements for future Google Pay and Apple Pay enablement",
-            "error": "Failed to create user story"
-          },
-          {
-            "type": "user_story",
-            "title": "Integrate Jaywan transactions into fraud monitoring",
-            "error": "Failed to create user story"
-          },
-          {
-            "type": "user_story",
-            "title": "Integrate Jaywan transactions into AML and sanctions screening",
-            "error": "Failed to create user story"
-          },
-          {
-            "type": "user_story",
-            "title": "Update customer communication for Jaywan products and routing",
-            "error": "Failed to create user story"
-          },
-          {
-            "type": "user_story",
-            "title": "Train staff on Jaywan products, processes, and tools",
-            "error": "Failed to create user story"
-          },
-          {
-            "type": "user_story",
-            "title": "Define and track open questions with CBUAE and AEP",
-            "error": "Failed to create user story"
-          },
-          {
-            "type": "user_story",
-            "title": "Implement role-based access and audit logging for Jaywan configuration and operations",
-            "error": "Failed to create user story"
-          },
-          {
-            "type": "user_story",
-            "title": "Ensure PCI-DSS and encryption compliance for Jaywan card data",
-            "error": "Failed to create user story"
-          },
-          {
-            "type": "user_story",
-            "title": "Implement Jaywan data retention and traceability",
-            "error": "Failed to create user story"
-          },
-          {
-            "type": "user_story",
-            "title": "Plan for Jaywan capacity and availability in line with NFRs",
-            "error": "Failed to create user story"
-          },
-          {
-            "type": "user_story",
-            "title": "Minimize manual interventions in Jaywan operational processes",
-            "error": "Failed to create user story"
-          }
-        ],
+        "failed": [],
         "total": 56
       }
     },
@@ -862,6 +887,15 @@
       "filename": "User_Stories_20260309_090904_3a48ab0c.xlsx",
       "file_path": "brd_projects\\dbd4d286-38e3-4aec-89a6-6bcec5f85505\\user_stories\\User_Stories_20260309_090904_3a48ab0c.xlsx",
       "generated_at": "2026-03-09T09:22:22.916802",
+      "brd_id": "9c6f7b8e-52df-4f3b-a359-d48c65c5b861",
+      "version": "v1.0",
+      "brd_filename": "BRD_20260123_065625_9c6f7b8e.docx"
+    },
+    {
+      "id": "2076a8e4-d387-49a8-84bd-6b0c084b6bce",
+      "filename": "User_Stories_20260309_095937_2076a8e4.xlsx",
+      "file_path": "brd_projects\\dbd4d286-38e3-4aec-89a6-6bcec5f85505\\user_stories\\User_Stories_20260309_095937_2076a8e4.xlsx",
+      "generated_at": "2026-03-09T10:11:15.999001",
       "brd_id": "9c6f7b8e-52df-4f3b-a359-d48c65c5b861",
       "version": "v1.0",
       "brd_filename": "BRD_20260123_065625_9c6f7b8e.docx"

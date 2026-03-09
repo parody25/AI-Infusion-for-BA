@@ -178,6 +178,9 @@ class JiraService:
                 logger.error("Epic issue type not found")
                 return None
             
+            # Get custom field IDs for Epic-specific fields
+            custom_fields = self._get_custom_field_ids()
+            
             issue_dict = {
                 'project': {'key': project_key},
                 'summary': title,
@@ -185,6 +188,14 @@ class JiraService:
                 'issuetype': {'name': 'Epic'},
                 'priority': {'name': priority}
             }
+            
+            # Set custom fields if they exist
+            if 'epic_id' in custom_fields:
+                issue_dict[custom_fields['epic_id']] = title  # Use title as epic_id for now
+            if 'title' in custom_fields:
+                issue_dict[custom_fields['title']] = title
+            if 'description' in custom_fields:
+                issue_dict[custom_fields['description']] = description
             
             new_issue = self.jira_client.create_issue(fields=issue_dict)
             logger.info(f"Created Epic: {new_issue.key}")
@@ -227,12 +238,13 @@ class JiraService:
                 'priority': {'name': priority}
             }
             
-            # Add story points if provided
-            if story_points is not None:
-                issue_dict['customfield_10016'] = story_points  # Story Points field
-            
-            # Get custom field IDs and set custom fields
+            # Get custom field IDs dynamically
             custom_fields = self._get_custom_field_ids()
+            
+            # Add story points using dynamic field ID
+            story_points_field = self._get_story_points_field_id()
+            if story_points_field and story_points is not None:
+                issue_dict[story_points_field] = story_points
             
             # Set custom fields if they exist and values are provided
             if story_id and 'story_id' in custom_fields:
@@ -244,12 +256,12 @@ class JiraService:
             if version and 'version' in custom_fields:
                 issue_dict[custom_fields['version']] = version
             
+            # Use parent relationship for modern Jira Cloud instead of Epic Link
+            if epic_key:
+                issue_dict["parent"] = {"key": epic_key}
+            
             new_issue = self.jira_client.create_issue(fields=issue_dict)
             logger.info(f"Created User Story: {new_issue.key}")
-            
-            # Link to Epic if provided
-            if epic_key:
-                self._link_to_epic(new_issue.key, epic_key)
             
             return {
                 "issue_key": new_issue.key,
@@ -298,15 +310,21 @@ class JiraService:
             return None
     
     def _link_to_epic(self, story_key: str, epic_key: str):
-        """Link a story to an epic."""
+        """Link a story to an epic (legacy method for backward compatibility)."""
         try:
-            # Set the Epic Link custom field
-            epic_link_field = self._get_epic_link_field_id()
-            if epic_link_field:
-                self.jira_client.issue(story_key).update(fields={epic_link_field: epic_key})
-                logger.info(f"Linked {story_key} to Epic {epic_key}")
+            # Try modern parent relationship first
+            self.jira_client.issue(story_key).update(fields={"parent": {"key": epic_key}})
+            logger.info(f"Linked {story_key} to Epic {epic_key} using parent relationship")
         except JIRAError as e:
-            logger.error(f"Failed to link {story_key} to Epic {epic_key}: {e}")
+            logger.warning(f"Parent relationship failed for {story_key}: {e}")
+            # Fall back to Epic Link custom field
+            try:
+                epic_link_field = self._get_epic_link_field_id()
+                if epic_link_field:
+                    self.jira_client.issue(story_key).update(fields={epic_link_field: epic_key})
+                    logger.info(f"Linked {story_key} to Epic {epic_key} using Epic Link field")
+            except JIRAError as e2:
+                logger.error(f"Failed to link {story_key} to Epic {epic_key}: {e2}")
     
     def _link_parent_child(self, parent_key: str, child_key: str):
         """Link a child issue to a parent issue."""
@@ -363,6 +381,19 @@ class JiraService:
         except JIRAError:
             return None
     
+    def _get_story_points_field_id(self) -> Optional[str]:
+        """Get the Story Points custom field ID dynamically."""
+        try:
+            if not self._ensure_connected():
+                return None
+            fields = self.jira_client.fields()
+            for field in fields:
+                if field['name'].lower() == "story points":
+                    return field['id']
+            return None
+        except JIRAError:
+            return None
+    
     def _get_custom_field_ids(self) -> Dict[str, str]:
         """Get custom field IDs for the custom fields we want to use."""
         try:
@@ -371,14 +402,24 @@ class JiraService:
             fields = self.jira_client.fields()
             custom_fields = {}
             
-            # Map field names to their IDs
-            field_name_to_id = {field['name']: field['id'] for field in fields}
+            # Map field names to their IDs (case-insensitive)
+            field_name_to_id = {field['name'].lower(): field['id'] for field in fields}
             
-            # Look for our custom fields
-            custom_field_names = ['story_id', 'user_role', 'brd_reference', 'version']
+            # Look for our custom fields (case-insensitive matching)
+            custom_field_names = [
+                'story id',      # 'story_id' -> 'story id'
+                'user role',     # 'user_role' -> 'user role'
+                'brd reference', # 'brd_reference' -> 'brd reference'
+                'version',
+                'epic id',       # For Epic custom fields
+                'title',         # For Epic custom fields
+                'description',   # For Epic custom fields
+                'related stories' # For Epic custom fields
+            ]
+            
             for field_name in custom_field_names:
                 if field_name in field_name_to_id:
-                    custom_fields[field_name] = field_name_to_id[field_name]
+                    custom_fields[field_name.replace(' ', '_')] = field_name_to_id[field_name]
             
             return custom_fields
         except JIRAError:
