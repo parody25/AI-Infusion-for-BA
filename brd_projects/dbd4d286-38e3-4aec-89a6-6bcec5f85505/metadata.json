@@ -658,205 +658,205 @@
       "version": "v1.0",
       "brd_filename": "BRD_20260123_065625_9c6f7b8e.docx",
       "jira_sync_status": "completed",
-      "jira_sync_at": "2026-03-09T11:32:27.769355",
+      "jira_sync_at": "2026-03-09T11:49:05.953858",
       "jira_sync_results": {
         "success": [
           {
-            "issue_key": "JAYW-41",
-            "issue_id": "10355",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-41",
+            "issue_key": "JAYW-76",
+            "issue_id": "10391",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-76",
             "type": "Epic"
           },
           {
-            "issue_key": "JAYW-42",
-            "issue_id": "10356",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-42",
+            "issue_key": "JAYW-77",
+            "issue_id": "10392",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-77",
             "type": "Epic"
           },
           {
-            "issue_key": "JAYW-43",
-            "issue_id": "10357",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-43",
+            "issue_key": "JAYW-78",
+            "issue_id": "10393",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-78",
             "type": "Epic"
           },
           {
-            "issue_key": "JAYW-44",
-            "issue_id": "10358",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-44",
+            "issue_key": "JAYW-79",
+            "issue_id": "10394",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-79",
             "type": "Epic"
           },
           {
-            "issue_key": "JAYW-45",
-            "issue_id": "10359",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-45",
+            "issue_key": "JAYW-80",
+            "issue_id": "10395",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-80",
             "type": "Epic"
           },
           {
-            "issue_key": "JAYW-46",
-            "issue_id": "10360",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-46",
+            "issue_key": "JAYW-81",
+            "issue_id": "10396",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-81",
             "type": "Epic"
           },
           {
-            "issue_key": "JAYW-47",
-            "issue_id": "10361",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-47",
+            "issue_key": "JAYW-82",
+            "issue_id": "10397",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-82",
             "type": "Epic"
           },
           {
-            "issue_key": "JAYW-48",
-            "issue_id": "10362",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-48",
+            "issue_key": "JAYW-83",
+            "issue_id": "10398",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-83",
             "type": "Story"
           },
           {
-            "issue_key": "JAYW-49",
-            "issue_id": "10363",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-49",
+            "issue_key": "JAYW-84",
+            "issue_id": "10399",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-84",
             "type": "Story"
           },
           {
-            "issue_key": "JAYW-50",
-            "issue_id": "10364",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-50",
+            "issue_key": "JAYW-85",
+            "issue_id": "10400",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-85",
             "type": "Story"
           },
           {
-            "issue_key": "JAYW-51",
-            "issue_id": "10365",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-51",
+            "issue_key": "JAYW-86",
+            "issue_id": "10401",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-86",
             "type": "Story"
           },
           {
-            "issue_key": "JAYW-52",
-            "issue_id": "10366",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-52",
+            "issue_key": "JAYW-87",
+            "issue_id": "10402",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-87",
             "type": "Story"
           },
           {
-            "issue_key": "JAYW-53",
-            "issue_id": "10367",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-53",
+            "issue_key": "JAYW-88",
+            "issue_id": "10403",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-88",
             "type": "Story"
           },
           {
-            "issue_key": "JAYW-54",
-            "issue_id": "10368",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-54",
+            "issue_key": "JAYW-89",
+            "issue_id": "10404",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-89",
             "type": "Story"
           },
           {
-            "issue_key": "JAYW-55",
-            "issue_id": "10369",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-55",
+            "issue_key": "JAYW-90",
+            "issue_id": "10405",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-90",
             "type": "Story"
           },
           {
-            "issue_key": "JAYW-56",
-            "issue_id": "10370",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-56",
+            "issue_key": "JAYW-91",
+            "issue_id": "10406",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-91",
             "type": "Story"
           },
           {
-            "issue_key": "JAYW-57",
-            "issue_id": "10371",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-57",
+            "issue_key": "JAYW-92",
+            "issue_id": "10407",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-92",
             "type": "Story"
           },
           {
-            "issue_key": "JAYW-58",
-            "issue_id": "10372",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-58",
+            "issue_key": "JAYW-93",
+            "issue_id": "10408",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-93",
             "type": "Story"
           },
           {
-            "issue_key": "JAYW-59",
-            "issue_id": "10373",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-59",
+            "issue_key": "JAYW-94",
+            "issue_id": "10409",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-94",
             "type": "Story"
           },
           {
-            "issue_key": "JAYW-60",
-            "issue_id": "10374",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-60",
+            "issue_key": "JAYW-95",
+            "issue_id": "10410",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-95",
             "type": "Story"
           },
           {
-            "issue_key": "JAYW-61",
-            "issue_id": "10375",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-61",
+            "issue_key": "JAYW-96",
+            "issue_id": "10411",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-96",
             "type": "Story"
           },
           {
-            "issue_key": "JAYW-62",
-            "issue_id": "10376",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-62",
+            "issue_key": "JAYW-97",
+            "issue_id": "10412",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-97",
             "type": "Story"
           },
           {
-            "issue_key": "JAYW-63",
-            "issue_id": "10377",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-63",
+            "issue_key": "JAYW-98",
+            "issue_id": "10413",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-98",
             "type": "Story"
           },
           {
-            "issue_key": "JAYW-64",
-            "issue_id": "10378",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-64",
+            "issue_key": "JAYW-99",
+            "issue_id": "10414",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-99",
             "type": "Story"
           },
           {
-            "issue_key": "JAYW-65",
-            "issue_id": "10379",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-65",
+            "issue_key": "JAYW-100",
+            "issue_id": "10415",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-100",
             "type": "Story"
           },
           {
-            "issue_key": "JAYW-66",
-            "issue_id": "10380",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-66",
+            "issue_key": "JAYW-101",
+            "issue_id": "10416",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-101",
             "type": "Story"
           },
           {
-            "issue_key": "JAYW-67",
-            "issue_id": "10381",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-67",
+            "issue_key": "JAYW-102",
+            "issue_id": "10417",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-102",
             "type": "Story"
           },
           {
-            "issue_key": "JAYW-68",
-            "issue_id": "10382",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-68",
+            "issue_key": "JAYW-103",
+            "issue_id": "10418",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-103",
             "type": "Story"
           },
           {
-            "issue_key": "JAYW-69",
-            "issue_id": "10383",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-69",
+            "issue_key": "JAYW-104",
+            "issue_id": "10419",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-104",
             "type": "Story"
           },
           {
-            "issue_key": "JAYW-70",
-            "issue_id": "10384",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-70",
+            "issue_key": "JAYW-105",
+            "issue_id": "10420",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-105",
             "type": "Story"
           },
           {
-            "issue_key": "JAYW-71",
-            "issue_id": "10385",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-71",
+            "issue_key": "JAYW-106",
+            "issue_id": "10421",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-106",
             "type": "Story"
           },
           {
-            "issue_key": "JAYW-72",
-            "issue_id": "10386",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-72",
+            "issue_key": "JAYW-107",
+            "issue_id": "10422",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-107",
             "type": "Story"
           },
           {
-            "issue_key": "JAYW-73",
-            "issue_id": "10387",
-            "url": "https://anewamazon4.atlassian.net/browse/JAYW-73",
+            "issue_key": "JAYW-108",
+            "issue_id": "10423",
+            "url": "https://anewamazon4.atlassian.net/browse/JAYW-108",
             "type": "Story"
           }
         ],

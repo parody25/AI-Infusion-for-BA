@@ -406,15 +406,19 @@ class JiraService:
             field_name_to_id = {field['name'].lower(): field['id'] for field in fields}
             
             # Look for our custom fields (case-insensitive matching)
+            # Based on the actual fields found in the Jira instance
             custom_field_names = [
-                'story id',      # 'story_id' -> 'story id'
-                'user role',     # 'user_role' -> 'user role'
-                'brd reference', # 'brd_reference' -> 'brd reference'
-                'version',
-                'epic id',       # For Epic custom fields
-                'title',         # For Epic custom fields
-                'description',   # For Epic custom fields
-                'related stories' # For Epic custom fields
+                'story id',      # 'story_id' -> 'story id' (found: customfield_10062, customfield_10103)
+                'user role',     # 'user_role' -> 'user role' (found: customfield_10105, customfield_10058)
+                'brd reference', # 'brd_reference' -> 'brd reference' (found: customfield_10110, customfield_10061)
+                'version',       # (found: customfield_10111, customfield_10065)
+                'epic id',       # 'epic_id' -> 'epic id' (found: customfield_10099)
+                'title',         # (found: customfield_10104, customfield_10063, customfield_10066, customfield_10100)
+                'description',   # (found: customfield_10106, customfield_10101)
+                'related stories', # 'related_stories' -> 'related stories' (found: customfield_10102)
+                'acceptance criteria', # 'acceptance_criteria' -> 'acceptance criteria' (found: customfield_10107, customfield_10060)
+                'priority',      # (found: customfield_10108, customfield_10064)
+                'effort estimate' # 'effort_estimate' -> 'effort estimate' (found: customfield_10109, customfield_10059)
             ]
             
             for field_name in custom_field_names:
