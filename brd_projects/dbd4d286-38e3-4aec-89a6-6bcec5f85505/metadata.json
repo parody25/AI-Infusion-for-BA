@@ -847,6 +847,24 @@
       "brd_id": "9c6f7b8e-52df-4f3b-a359-d48c65c5b861",
       "version": "v1.0",
       "brd_filename": "BRD_20260123_065625_9c6f7b8e.docx"
+    },
+    {
+      "id": "f20b2c0d-ffac-4035-8169-8e0f45520bfd",
+      "filename": "User_Stories_20260309_082027_f20b2c0d.xlsx",
+      "file_path": "brd_projects\\dbd4d286-38e3-4aec-89a6-6bcec5f85505\\user_stories\\User_Stories_20260309_082027_f20b2c0d.xlsx",
+      "generated_at": "2026-03-09T08:23:03.298749",
+      "brd_id": "9c6f7b8e-52df-4f3b-a359-d48c65c5b861",
+      "version": "v1.0",
+      "brd_filename": "BRD_20260123_065625_9c6f7b8e.docx"
+    },
+    {
+      "id": "fbd9ef89-8a82-4783-9fdf-387cf3f4dd49",
+      "filename": "User_Stories_20260309_083546_fbd9ef89.xlsx",
+      "file_path": "brd_projects\\dbd4d286-38e3-4aec-89a6-6bcec5f85505\\user_stories\\User_Stories_20260309_083546_fbd9ef89.xlsx",
+      "generated_at": "2026-03-09T08:53:00.658534",
+      "brd_id": "9c6f7b8e-52df-4f3b-a359-d48c65c5b861",
+      "version": "v1.0",
+      "brd_filename": "BRD_20260123_065625_9c6f7b8e.docx"
     }
   ]
 }

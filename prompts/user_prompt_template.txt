@@ -10,6 +10,13 @@ CRITICAL RULES:
 - Format all text content using dot bullet points (starting with "• ") instead of paragraphs.
 - For process descriptions, use numbered lists (starting with "1. ") to show sequence
 
+EXHAUSTIVENESS REQUIREMENTS:
+- You MUST identify every single functional requirement, edge case, and validation rule mentioned in the context.
+- If a requirement is complex, break it into multiple smaller user stories.
+- Target at least 5-10 user stories for the specific module provided.
+- Ensure Acceptance Criteria include field validations, error states, and CBUAE compliance checks.
+- Do not summarize or aggregate requirements - each distinct capability should become its own user story.
+
 === REQUIREMENTS ===
 {requirements}
 

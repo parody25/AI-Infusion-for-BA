@@ -121,6 +121,61 @@ CRITICAL RULES:
 """
 
     # ------------------------------------------------------------------
+    # MODULE IDENTIFICATION
+    # ------------------------------------------------------------------
+
+    def identify_modules(self, brd_content: str) -> List[str]:
+        """
+        Identify high-level functional modules or epic-level areas in the BRD.
+        This enables modular generation for better coverage.
+        """
+        prompt = f"""
+Based on this BRD content, identify the high-level functional modules or areas.
+Look for distinct business capabilities, user flows, or system components.
+Return ONLY a JSON list of module names (3-8 modules total).
+
+Examples:
+- User Authentication & Security
+- Payment Processing
+- Admin Dashboard & Reporting
+- Customer Onboarding
+- Transaction Management
+
+BRD Content:
+{brd_content[:15000]}  # Use larger chunk for better module identification
+"""
+        
+        response = self.client.responses.create(
+            model=self.model,
+            input=[
+                {"role": "system", "content": "You are a Business Analyst identifying functional modules in BRD documents."},
+                {"role": "user", "content": prompt}
+            ],
+            max_output_tokens=3000,
+            temperature=0.1
+        )
+        
+        # Extract text using the same method as generate_user_stories_json
+        if hasattr(response, "output_text") and response.output_text:
+            raw_response = response.output_text.strip()
+        else:
+            texts = []
+            for item in getattr(response, "output", []):
+                for content in getattr(item, "content", []):
+                    if content.get("type") == "output_text":
+                        texts.append(content.get("text", ""))
+            raw_response = "\n".join(texts).strip()
+        
+        try:
+            modules = json.loads(raw_response)
+            print(f"DEBUG: Identified modules: {modules}")
+            return modules
+        except json.JSONDecodeError:
+            # Fallback if JSON parsing fails
+            print("DEBUG: Module identification failed, using fallback approach")
+            return ["Core Functionality", "User Management", "Reporting & Analytics"]
+
+    # ------------------------------------------------------------------
     # RAG PIPELINE FOR BRD EMBEDDINGS
     # ------------------------------------------------------------------
 
@@ -159,30 +214,29 @@ CRITICAL RULES:
             traceback.print_exc()
             return False
 
-    def retrieve_brd_context(self, embeddings_path: str, query: str, top_k: int = 30) -> str:
+    def retrieve_brd_context(self, embeddings_path: str, query: str, top_k: int = 20) -> str:
         """
-        Retrieve relevant context from BRD embeddings using RAG.
+        Enhanced retrieval with a global context anchor and resilient fallback.
         """
         try:
-            if not os.path.exists(embeddings_path):
-                print(f"DEBUG: No embeddings found at {embeddings_path}, using fallback")
+            if not embeddings_path or not os.path.exists(embeddings_path):
                 return ""
 
-            # Load the index from storage
             storage_context = StorageContext.from_defaults(persist_dir=embeddings_path)
             index = load_index_from_storage(storage_context)
-            
-            # Retrieve relevant nodes
             retriever = index.as_retriever(similarity_top_k=top_k)
-            nodes = retriever.retrieve(query)
-            
-            # Extract context from retrieved nodes
+
+            # Retrieve global overview AND module-specific nodes
+            global_nodes = retriever.retrieve("Project Overview and High Level Requirements")
+            local_nodes = retriever.retrieve(query)
+
             context_parts = []
-            for i, node in enumerate(nodes[:10]):  # Limit to top 10
-                if hasattr(node, 'text') and node.text:
-                    context_parts.append(f"Context {i+1}: {node.text[:500]}...")
-                elif hasattr(node, 'content') and node.content:
-                    context_parts.append(f"Context {i+1}: {node.content[:500]}...")
+            seen_text = set()
+            for node in (global_nodes[:5] + local_nodes):
+                txt = node.get_content()
+                if txt and txt not in seen_text:
+                    context_parts.append(txt)
+                    seen_text.add(txt)
 
             context = "\n\n".join(context_parts)
             print(f"DEBUG: Retrieved BRD context length: {len(context)} characters")
@@ -190,7 +244,7 @@ CRITICAL RULES:
             return context
             
         except Exception as e:
-            print(f"ERROR: Failed to retrieve BRD context: {e}")
+            print(f"DEBUG: RAG Retrieval error: {e}")
             return ""
 
     # ------------------------------------------------------------------
@@ -225,15 +279,6 @@ CRITICAL RULES:
             data = json.loads(raw)
         except json.JSONDecodeError as e:
             raise RuntimeError(f"Invalid JSON from GPT: {e}\n\n{raw}")
-
-        # Save raw response for debugging
-        os.makedirs("llm_responses", exist_ok=True)
-        with open(
-            f"llm_responses/user_stories_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
-            "w",
-            encoding="utf-8"
-        ) as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
 
         return data
 
@@ -309,6 +354,90 @@ CRITICAL RULES:
             raise RuntimeError(f"Excel export failed: {e}")
 
     # ------------------------------------------------------------------
+    # MODULAR GENERATION APPROACH
+    # ------------------------------------------------------------------
+
+    def generate_extensive_user_stories(
+        self,
+        brd_content: str,
+        version: str,
+        schema_json: str,
+        embeddings_path: str = None
+    ) -> Dict:
+        """
+        Generate extensive user stories using resilient retrieval strategy.
+        This method breaks down the BRD into modules and generates stories for each module.
+        """
+        print("DEBUG: Starting modular user stories generation...")
+        
+        # Step 1: Identify modules in the BRD
+        modules = self.identify_modules(brd_content)
+        
+        all_stories_list = []
+        all_epics = []
+        all_deps = []
+        
+        # Global counter strictly managed outside the LLM call
+        story_counter = 1 
+
+        # Create a "Foundation Context" (First 12k chars) to use if RAG fails
+        foundation_context = brd_content[:12000]
+
+        for i, module_name in enumerate(modules):
+            print(f"DEBUG: Processing module {i+1}/{len(modules)}: {module_name}")
+            
+            # 1. Try RAG
+            module_context = self.retrieve_brd_context(embeddings_path, module_name)
+
+            # 2. SAFETY FALLBACK: If RAG returns < 500 chars, it likely failed. 
+            # Use the module name + Foundation Context instead.
+            if len(module_context) < 500:
+                print(f"INFO: RAG thin for {module_name} ({len(module_context)} chars). Using Foundation Fallback.")
+                module_context = f"MODULE: {module_name}\n\nGENERAL BRD CONTEXT:\n{foundation_context}"
+
+            # 3. Generate
+            try:
+                user_prompt = self._user_prompt_template().format(
+                    brd_content=module_context,
+                    version=version,
+                    schema_json=schema_json
+                )
+
+                response = self.client.responses.create(
+                    model=self.model,
+                    input=[
+                        {"role": "system", "content": self._system_prompt()},
+                        {"role": "user", "content": user_prompt}
+                    ],
+                    max_output_tokens=self.max_output_tokens
+                )
+                
+                raw_json = self._extract_text(response)
+                module_data = json.loads(raw_json)
+                
+                stories = module_data.get("user_stories", [])
+                for s in stories:
+                    s["story_id"] = f"US-{story_counter:03d}"
+                    s["version"] = version
+                    story_counter += 1
+                    all_stories_list.append(s)
+
+                all_epics.extend(module_data.get("epics", []))
+                all_deps.extend(module_data.get("dependencies", []))
+                
+                print(f"DEBUG: Added {len(stories)} stories for {module_name}")
+
+            except Exception as e:
+                print(f"ERROR: Module {module_name} failed: {e}")
+
+        # Final aggregation
+        return {
+            "user_stories": all_stories_list,
+            "epics": all_epics,
+            "dependencies": all_deps
+        }
+
+    # ------------------------------------------------------------------
     # ORCHESTRATOR
     # ------------------------------------------------------------------
 
@@ -317,8 +446,14 @@ CRITICAL RULES:
         brd_content: str,
         version: str,
         schema_json: str,
-        output_path: str
+        output_path: str,
+        use_modular_approach: bool = True,
+        embeddings_path: str = None
     ) -> str:
         """Generate user stories from BRD content and export to Excel."""
-        data = self.generate_user_stories_json(brd_content, version, schema_json)
+        if use_modular_approach:
+            data = self.generate_extensive_user_stories(brd_content, version, schema_json, embeddings_path)
+        else:
+            data = self.generate_user_stories_json(brd_content, version, schema_json)
+        
         return self.export_to_excel(data, output_path)
