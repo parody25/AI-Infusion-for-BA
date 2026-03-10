@@ -58,6 +58,10 @@ class OpenAIUserStoriesService:
         # Set global LlamaIndex settings
         Settings.embed_model = self.embed_model
         Settings.llm = self.llm
+        
+        # Persistent index for optimization
+        self.index = None
+        self.current_embeddings_path = None
 
     # ------------------------------------------------------------------
     # GPT RESPONSE HANDLING
@@ -214,33 +218,67 @@ BRD Content:
             traceback.print_exc()
             return False
 
+    def load_index(self, embeddings_path: str):
+        """Loads and caches the index once for optimization."""
+        if not embeddings_path or not os.path.exists(embeddings_path):
+            print(f"ERROR: Embeddings path {embeddings_path} invalid or not found.")
+            return None
+        
+        try:
+            # Clear previous index to ensure clean loading
+            self.index = None
+            self.current_embeddings_path = None
+            
+            storage_context = StorageContext.from_defaults(persist_dir=embeddings_path)
+            self.index = load_index_from_storage(storage_context)
+            self.current_embeddings_path = embeddings_path
+            print(f"DEBUG: Successfully loaded index from {embeddings_path}")
+            return self.index
+        except Exception as e:
+            print(f"ERROR: Failed to load index: {e}")
+            return None
+
     def retrieve_brd_context(self, embeddings_path: str, query: str, top_k: int = 20) -> str:
         """
         Enhanced retrieval with a global context anchor and resilient fallback.
+        Uses persistent index loading for better performance.
         """
-        try:
-            if not embeddings_path or not os.path.exists(embeddings_path):
+        # Debug: Check if embeddings_path is None
+        if embeddings_path is None:
+            print(f"DEBUG: retrieve_brd_context called with embeddings_path=None")
+            return ""
+        
+        # Check if we need to load a new index
+        if not self.index or self.current_embeddings_path != embeddings_path:
+            if not self.load_index(embeddings_path):
                 return ""
-
-            storage_context = StorageContext.from_defaults(persist_dir=embeddings_path)
-            index = load_index_from_storage(storage_context)
-            retriever = index.as_retriever(similarity_top_k=top_k)
+        
+        try:
+            # Use cached index for retrieval
+            retriever = self.index.as_retriever(similarity_top_k=top_k)
 
             # Retrieve global overview AND module-specific nodes
             global_nodes = retriever.retrieve("Project Overview and High Level Requirements")
             local_nodes = retriever.retrieve(query)
-
+            
+            # Debug logging for retrieval quality
+            if not global_nodes and not local_nodes:
+                print(f"DEBUG: Retriever returned 0 nodes for query: {query}")
+                return ""
+            
             context_parts = []
             seen_text = set()
-            for node in (global_nodes[:5] + local_nodes):
-                # Try multiple ways to get content
-                txt = None
-                if hasattr(node, 'get_content'):
-                    txt = node.get_content()
-                elif hasattr(node, 'text'):
-                    txt = node.text
-                elif hasattr(node, 'content'):
-                    txt = node.content
+            
+            # Use NodeWithScore correctly
+            for node_with_score in (global_nodes[:5] + local_nodes):
+                # IMPORTANT: Access the actual 'node' object inside the wrapper
+                node = node_with_score.node 
+                
+                # Log similarity score for debugging
+                print(f"DEBUG: Node similarity score: {node_with_score.score}")
+                
+                # Now extract the content from the actual node
+                txt = node.get_content()
                 
                 if txt and txt not in seen_text:
                     context_parts.append(txt)
@@ -395,19 +433,32 @@ BRD Content:
         for i, module_name in enumerate(modules):
             print(f"DEBUG: Processing module {i+1}/{len(modules)}: {module_name}")
             
-            # 1. Try RAG
-            module_context = self.retrieve_brd_context(embeddings_path, module_name)
+            # 1. Try RAG with multi-step retrieval for better context
+            retrieval_query = f"{module_name} requirements, functional specifications, and business rules"
+            
+            # Retrieve technical constraints and data specifications
+            tech_context = self.retrieve_brd_context(embeddings_path, "Technical constraints and data specifications", top_k=5)
+            
+            # Retrieve module-specific context
+            module_context = self.retrieve_brd_context(embeddings_path, retrieval_query, top_k=15)
+            
+            # Combine contexts for richer information
+            combined_context = f"{tech_context}\n\n{module_context}"
+            
+            # Debug: Check if embeddings_path is None
+            if embeddings_path is None:
+                print(f"DEBUG: embeddings_path is None for module {module_name}")
 
             # 2. SAFETY FALLBACK: If RAG returns < 500 chars, it likely failed. 
             # Use the module name + Foundation Context instead.
-            if len(module_context) < 500:
-                print(f"INFO: RAG thin for {module_name} ({len(module_context)} chars). Using Foundation Fallback.")
-                module_context = f"MODULE: {module_name}\n\nGENERAL BRD CONTEXT:\n{foundation_context}"
+            if len(combined_context) < 500:
+                print(f"INFO: RAG thin for {module_name} ({len(combined_context)} chars). Using Foundation Fallback.")
+                combined_context = f"MODULE: {module_name}\n\nGENERAL BRD CONTEXT:\n{foundation_context}"
 
             # 3. Generate
             try:
                 user_prompt = self._user_prompt_template().format(
-                    brd_content=module_context,
+                    brd_content=combined_context,
                     version=version,
                     schema_json=schema_json
                 )

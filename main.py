@@ -774,11 +774,14 @@ async def generate_user_stories_for_project(project_id: str, request_data: UserS
 
     # Generate and export User Stories to Excel
     try:
+        print(f"DEBUG: Calling generate_user_stories_excel with embeddings_path: {brd_embeddings_file}")
         filled_path = user_stories_service.generate_user_stories_excel(
             brd_content=combined_content,
             version=version,
             schema_json=USER_STORIES_SCHEMA_JSON_STRING,
-            output_path=output_path
+            output_path=output_path,
+            use_modular_approach=True,
+            embeddings_path=brd_embeddings_file
         )
         print(f"DEBUG: User Stories generated successfully at {filled_path}")
     except Exception as e:

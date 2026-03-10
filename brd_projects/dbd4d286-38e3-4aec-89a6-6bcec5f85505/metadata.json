@@ -899,6 +899,15 @@
       "brd_id": "9c6f7b8e-52df-4f3b-a359-d48c65c5b861",
       "version": "v1.0",
       "brd_filename": "BRD_20260123_065625_9c6f7b8e.docx"
+    },
+    {
+      "id": "b9ca3660-d0f0-479e-b91c-9c029f15cb20",
+      "filename": "User_Stories_20260310_064731_b9ca3660.xlsx",
+      "file_path": "brd_projects\\dbd4d286-38e3-4aec-89a6-6bcec5f85505\\user_stories\\User_Stories_20260310_064731_b9ca3660.xlsx",
+      "generated_at": "2026-03-10T07:07:00.649242",
+      "brd_id": "9c6f7b8e-52df-4f3b-a359-d48c65c5b861",
+      "version": "v1.1",
+      "brd_filename": "BRD_20260123_065625_9c6f7b8e.docx"
     }
   ]
 }
