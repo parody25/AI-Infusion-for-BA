@@ -114,6 +114,15 @@ CRITICAL RULES:
 - Do NOT invent information not present in the BRD content.
 - Format all text content using dot bullet points (starting with "• ") instead of paragraphs.
 
+MODULE-SPECIFIC GENERATION RULES:
+- Focus ONLY on requirements and functionality relevant to the specific module being processed
+- DO NOT generate generic user stories that could apply to any system
+- DO NOT repeat functionality that would be covered in other modules
+- Each user story MUST be directly tied to the module's specific business capabilities
+- Prioritize unique, module-specific functionality over common system features
+- If the BRD content doesn't contain specific requirements for this module, generate fewer or no stories rather than generic ones
+- Avoid generating stories for basic system features (login, logout, dashboard, settings) unless explicitly mentioned in the BRD for this module
+
 === BRD CONTENT ===
 {brd_content}
 
