@@ -1,7 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException, Body
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 from typing import Optional
 import os
 import uuid
@@ -661,67 +661,31 @@ async def get_brd_template():
     return JSONResponse(content={"template": BRD_TEMPLATE})
 
 class UserStoriesGenerationRequest(BaseModel):
-    brd_id: str
+    brd_id: Optional[str] = None
+    customer_journey_content: Optional[str] = None
     version: str
+
+    @model_validator(mode='before')
+    def check_one_field(cls, values):
+        brd_id = values.get('brd_id')
+        customer_journey_content = values.get('customer_journey_content')
+        if not brd_id and not customer_journey_content:
+            raise ValueError('Either brd_id or customer_journey_content must be provided')
+        if brd_id and customer_journey_content:
+            raise ValueError('Only one of brd_id or customer_journey_content should be provided')
+        return values
 
 @app.post("/projects/{project_id}/generate_user_stories")
 async def generate_user_stories_for_project(project_id: str, request_data: UserStoriesGenerationRequest):
-    """Generate User Stories for a specific BRD version, store it in the project, and return metadata."""
-    brd_id = request_data.brd_id
+    """Generate User Stories for a specific BRD version or customer journey, store it in the project, and return metadata."""
     version = request_data.version
     
     print(f"DEBUG: Starting User Stories generation for project {project_id}")
-    print(f"DEBUG: BRD ID: {brd_id}")
     print(f"DEBUG: Version: {version}")
 
     project_path = get_project_path(project_id)
     if not os.path.exists(project_path):
         raise HTTPException(status_code=404, detail="BRD project not found")
-
-    # Check if project has BRDs
-    metadata = load_project_metadata(project_id)
-    brds = metadata.get("brds", [])
-
-    # Find the specific BRD
-    brd_info = None
-    for brd in brds:
-        if brd["id"] == brd_id:
-            brd_info = brd
-            break
-
-    if not brd_info:
-        raise HTTPException(status_code=404, detail="BRD not found in project")
-
-    # Read the BRD content
-    file_path = brd_info["file_path"]
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="BRD file not found on disk")
-
-    # Extract text content from the BRD document
-    try:
-        from docx import Document
-        doc = Document(file_path)
-        brd_content = []
-        for para in doc.paragraphs:
-            if para.text.strip():
-                brd_content.append(para.text)
-        for table in doc.tables:
-            for row in table.rows:
-                for cell in row.cells:
-                    for para in cell.paragraphs:
-                        if para.text.strip():
-                            brd_content.append(para.text)
-        
-        brd_text = "\n".join(brd_content)
-        print(f"DEBUG: Extracted BRD content length: {len(brd_text)} characters")
-    except Exception as e:
-        print(f"ERROR: Failed to extract text from BRD: {e}")
-        raise HTTPException(status_code=500, detail=f"Error reading BRD file: {str(e)}")
-
-    if not brd_text.strip():
-        raise HTTPException(status_code=400, detail="BRD content is empty")
-
-    print("DEBUG: Calling User Stories service to generate content")
 
     # Create User Stories directory in project
     user_stories_dir = os.path.join(project_path, "user_stories")
@@ -736,70 +700,158 @@ async def generate_user_stories_for_project(project_id: str, request_data: UserS
     # Initialize User Stories service
     user_stories_service = OpenAIUserStoriesService()
 
-    # Create BRD embeddings for RAG pipeline if they don't exist
-    brd_embeddings_dir = os.path.join(project_path, "brd_embeddings")
-    os.makedirs(brd_embeddings_dir, exist_ok=True)
-    brd_embeddings_file = os.path.join(brd_embeddings_dir, f"{brd_id}_embeddings")
+    # Check if BRD content is provided
+    if request_data.brd_id:
+        # Generate from BRD
+        brd_id = request_data.brd_id
+        print(f"DEBUG: Generating User Stories from BRD ID: {brd_id}")
 
-    print(f"DEBUG: Checking for existing BRD embeddings at {brd_embeddings_file}")
-    
-    # Create embeddings if they don't exist
-    if not os.path.exists(brd_embeddings_file):
-        print(f"DEBUG: Creating new BRD embeddings for {brd_info['filename']}")
-        success = user_stories_service.create_brd_embeddings(file_path, brd_embeddings_file)
-        if not success:
-            print("WARNING: Failed to create BRD embeddings, will use direct text extraction")
-    else:
-        print(f"DEBUG: Using existing BRD embeddings for {brd_info['filename']}")
+        # Check if project has BRDs
+        metadata = load_project_metadata(project_id)
+        brds = metadata.get("brds", [])
 
-    # Retrieve context using RAG if embeddings exist
-    if os.path.exists(brd_embeddings_file):
-        print("DEBUG: Using RAG to retrieve relevant BRD context")
-        rag_context = user_stories_service.retrieve_brd_context(
-            brd_embeddings_file, 
-            f"Generate user stories for version {version}", 
-            top_k=30
-        )
+        # Find the specific BRD
+        brd_info = None
+        for brd in brds:
+            if brd["id"] == brd_id:
+                brd_info = brd
+                break
+
+        if not brd_info:
+            raise HTTPException(status_code=404, detail="BRD not found in project")
+
+        # Read the BRD content
+        file_path = brd_info["file_path"]
+        if not os.path.exists(file_path):
+            raise HTTPException(status_code=404, detail="BRD file not found on disk")
+
+        # Extract text content from the BRD document
+        try:
+            from docx import Document
+            doc = Document(file_path)
+            brd_content = []
+            for para in doc.paragraphs:
+                if para.text.strip():
+                    brd_content.append(para.text)
+            for table in doc.tables:
+                for row in table.rows:
+                    for cell in row.cells:
+                        for para in cell.paragraphs:
+                            if para.text.strip():
+                                brd_content.append(para.text)
+            
+            brd_text = "\n".join(brd_content)
+            print(f"DEBUG: Extracted BRD content length: {len(brd_text)} characters")
+        except Exception as e:
+            print(f"ERROR: Failed to extract text from BRD: {e}")
+            raise HTTPException(status_code=500, detail=f"Error reading BRD file: {str(e)}")
+
+        if not brd_text.strip():
+            raise HTTPException(status_code=400, detail="BRD content is empty")
+
+        # Create BRD embeddings for RAG pipeline if they don't exist
+        brd_embeddings_dir = os.path.join(project_path, "brd_embeddings")
+        os.makedirs(brd_embeddings_dir, exist_ok=True)
+        brd_embeddings_file = os.path.join(brd_embeddings_dir, f"{brd_id}_embeddings")
+
+        print(f"DEBUG: Checking for existing BRD embeddings at {brd_embeddings_file}")
         
-        if rag_context.strip():
-            print(f"DEBUG: RAG context length: {len(rag_context)} characters")
-            # Combine RAG context with direct text extraction for comprehensive coverage
-            combined_content = f"=== RAG RETRIEVED CONTEXT ===\n{rag_context}\n\n=== FULL BRD CONTENT ===\n{brd_text}"
+        # Create embeddings if they don't exist
+        if not os.path.exists(brd_embeddings_file):
+            print(f"DEBUG: Creating new BRD embeddings for {brd_info['filename']}")
+            success = user_stories_service.create_brd_embeddings(file_path, brd_embeddings_file)
+            if not success:
+                print("WARNING: Failed to create BRD embeddings, will use direct text extraction")
         else:
-            print("DEBUG: RAG context empty, using direct text extraction only")
+            print(f"DEBUG: Using existing BRD embeddings for {brd_info['filename']}")
+
+        # Retrieve context using RAG if embeddings exist
+        if os.path.exists(brd_embeddings_file):
+            print("DEBUG: Using RAG to retrieve relevant BRD context")
+            rag_context = user_stories_service.retrieve_brd_context(
+                brd_embeddings_file, 
+                f"Generate user stories for version {version}", 
+                top_k=30
+            )
+            
+            if rag_context.strip():
+                print(f"DEBUG: RAG context length: {len(rag_context)} characters")
+                # Combine RAG context with direct text extraction for comprehensive coverage
+                combined_content = f"=== RAG RETRIEVED CONTEXT ===\n{rag_context}\n\n=== FULL BRD CONTENT ===\n{brd_text}"
+            else:
+                print("DEBUG: RAG context empty, using direct text extraction only")
+                combined_content = brd_text
+        else:
+            print("DEBUG: No embeddings available, using direct text extraction only")
             combined_content = brd_text
+
+        # Generate and export User Stories to Excel
+        try:
+            print(f"DEBUG: Calling generate_user_stories_excel with embeddings_path: {brd_embeddings_file}")
+            filled_path = user_stories_service.generate_user_stories_excel(
+                brd_content=combined_content,
+                version=version,
+                schema_json=USER_STORIES_SCHEMA_JSON_STRING,
+                output_path=output_path,
+                use_modular_approach=True,
+                embeddings_path=brd_embeddings_file
+            )
+            print(f"DEBUG: User Stories generated successfully at {filled_path}")
+
+            # Record User Stories in project metadata
+            user_stories_info = {
+                "id": user_stories_id,
+                "filename": output_filename,
+                "file_path": output_path,
+                "generated_at": datetime.now().isoformat(),
+                "brd_id": brd_id,
+                "version": version,
+                "brd_filename": brd_info["filename"]
+            }
+
+        except Exception as e:
+            print(f"ERROR: Failed to generate User Stories: {e}")
+            raise HTTPException(status_code=500, detail=f"Error generating User Stories: {str(e)}")
+
+    elif request_data.customer_journey_content:
+        # Generate from Customer Journey
+        customer_journey_content = request_data.customer_journey_content
+        print(f"DEBUG: Generating User Stories from Customer Journey content")
+
+        if not customer_journey_content.strip():
+            raise HTTPException(status_code=400, detail="Customer Journey content is empty")
+
+        # Generate and export User Stories to Excel
+        try:
+            print(f"DEBUG: Calling generate_user_stories_from_customer_journey_excel")
+            filled_path = user_stories_service.generate_user_stories_from_customer_journey_excel(
+                customer_journey_content=customer_journey_content,
+                version=version,
+                schema_json=USER_STORIES_SCHEMA_JSON_STRING,
+                output_path=output_path
+            )
+            print(f"DEBUG: User Stories generated successfully at {filled_path}")
+
+            # Record User Stories in project metadata
+            user_stories_info = {
+                "id": user_stories_id,
+                "filename": output_filename,
+                "file_path": output_path,
+                "generated_at": datetime.now().isoformat(),
+                "customer_journey_content": customer_journey_content[:100] + "..." if len(customer_journey_content) > 100 else customer_journey_content,
+                "version": version,
+                "source_type": "customer_journey"
+            }
+
+        except Exception as e:
+            print(f"ERROR: Failed to generate User Stories from Customer Journey: {e}")
+            raise HTTPException(status_code=500, detail=f"Error generating User Stories from Customer Journey: {str(e)}")
+
     else:
-        print("DEBUG: No embeddings available, using direct text extraction only")
-        combined_content = brd_text
-
-    # Generate and export User Stories to Excel
-    try:
-        print(f"DEBUG: Calling generate_user_stories_excel with embeddings_path: {brd_embeddings_file}")
-        filled_path = user_stories_service.generate_user_stories_excel(
-            brd_content=combined_content,
-            version=version,
-            schema_json=USER_STORIES_SCHEMA_JSON_STRING,
-            output_path=output_path,
-            use_modular_approach=True,
-            embeddings_path=brd_embeddings_file
-        )
-        print(f"DEBUG: User Stories generated successfully at {filled_path}")
-    except Exception as e:
-        print(f"ERROR: Failed to generate User Stories: {e}")
-        raise HTTPException(status_code=500, detail=f"Error generating User Stories: {str(e)}")
-
-    # Record User Stories in project metadata
-    user_stories_info = {
-        "id": user_stories_id,
-        "filename": output_filename,
-        "file_path": output_path,
-        "generated_at": datetime.now().isoformat(),
-        "brd_id": brd_id,
-        "version": version,
-        "brd_filename": brd_info["filename"]
-    }
+        raise HTTPException(status_code=400, detail="Either brd_id or customer_journey_content must be provided")
 
     # Ensure user_stories array exists in metadata
+    metadata = load_project_metadata(project_id)
     if "user_stories" not in metadata:
         metadata["user_stories"] = []
     
@@ -812,7 +864,6 @@ async def generate_user_stories_for_project(project_id: str, request_data: UserS
         "message": "User Stories generated and stored successfully",
         "user_stories_id": user_stories_id,
         "filename": output_filename,
-        "brd_filename": brd_info["filename"],
         "version": version,
         "generated_at": user_stories_info["generated_at"]
     })

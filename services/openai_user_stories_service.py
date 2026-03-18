@@ -103,7 +103,7 @@ Use BFSI / CBUAE terminology and follow Agile best practices.
     def _user_prompt_template(self) -> str:
         """Template for user stories generation prompt."""
         return """
-Generate user stories based on the provided BRD content for version {version}.
+Generate user stories based on the provided content for version {version}.
 
 CRITICAL RULES:
 - The "description" fields in the JSON SCHEMA are your specific instructions for what to generate for that key.
@@ -111,20 +111,55 @@ CRITICAL RULES:
 - No markdown, no explanations.
 - Use BFSI / CBUAE terminology.
 - Use clear, actionable language.
-- Do NOT invent information not present in the BRD content.
+- Do NOT invent information not present in the provided content.
 - Format all text content using dot bullet points (starting with "• ") instead of paragraphs.
 
-MODULE-SPECIFIC GENERATION RULES:
-- Focus ONLY on requirements and functionality relevant to the specific module being processed
+CONTENT-SPECIFIC GENERATION RULES:
+- If BRD content is provided: Focus ONLY on requirements and functionality relevant to the specific module being processed
+- If Customer Journey content is provided: Focus on user actions, touchpoints, and pain points described in the journey
 - DO NOT generate generic user stories that could apply to any system
-- DO NOT repeat functionality that would be covered in other modules
-- Each user story MUST be directly tied to the module's specific business capabilities
-- Prioritize unique, module-specific functionality over common system features
-- If the BRD content doesn't contain specific requirements for this module, generate fewer or no stories rather than generic ones
-- Avoid generating stories for basic system features (login, logout, dashboard, settings) unless explicitly mentioned in the BRD for this module
+- DO NOT repeat functionality that would be covered in other modules or journey stages
+- Each user story MUST be directly tied to the specific business capabilities or user interactions described
+- Prioritize unique, content-specific functionality over common system features
+- If the content doesn't contain specific requirements for this module/journey stage, generate fewer or no stories rather than generic ones
+- Avoid generating stories for basic system features (login, logout, dashboard, settings) unless explicitly mentioned in the content
 
-=== BRD CONTENT ===
+=== CONTENT ===
 {brd_content}
+
+=== VERSION ===
+{version}
+
+=== JSON SCHEMA ===
+{schema_json}
+"""
+
+    def _customer_journey_prompt_template(self) -> str:
+        """Template for customer journey to user stories generation prompt."""
+        return """
+Generate user stories based on the provided Customer Journey content for version {version}.
+
+CRITICAL RULES:
+- The "description" fields in the JSON SCHEMA are your specific instructions for what to generate for that key.
+- Do NOT include the "description" keys in your JSON output; only return the data keys and their generated values.
+- No markdown, no explanations.
+- Use BFSI / CBUAE terminology.
+- Use clear, actionable language.
+- Do NOT invent information not present in the Customer Journey content.
+- Format all text content using dot bullet points (starting with "• ") instead of paragraphs.
+
+CUSTOMER JOURNEY SPECIFIC GENERATION RULES:
+- Focus on user actions, touchpoints, and interactions described in the journey
+- Identify specific user goals, tasks, and pain points at each journey stage
+- Generate user stories that address real user needs and improve the journey experience
+- Map journey stages to user story epics where appropriate
+- Prioritize stories that eliminate friction points and enhance user satisfaction
+- Each user story MUST be directly tied to a specific journey stage or user interaction
+- Avoid generating generic system features not related to the customer journey
+- Focus on user-facing functionality that improves the end-to-end experience
+
+=== CUSTOMER JOURNEY CONTENT ===
+{customer_journey_content}
 
 === VERSION ===
 {version}
@@ -309,6 +344,38 @@ BRD Content:
     def generate_user_stories_json(self, brd_content: str, version: str, schema_json: str) -> Dict:
         user_prompt = self._user_prompt_template().format(
             brd_content=brd_content,
+            version=version,
+            schema_json=schema_json
+        )
+
+        response = self.client.responses.create(
+            model=self.model,
+            input=[
+                {"role": "system", "content": self._system_prompt()},
+                {"role": "user", "content": user_prompt}
+            ],
+            max_output_tokens=self.max_output_tokens,
+            timeout=self.timeout
+        )
+
+        raw = self._extract_text(response)
+
+        if not raw:
+            raise RuntimeError("GPT returned empty output")
+
+        print(f"DEBUG: Raw LLM response preview: {raw[:500]}...")
+
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError as e:
+            raise RuntimeError(f"Invalid JSON from GPT: {e}\n\n{raw}")
+
+        return data
+
+    def generate_user_stories_from_customer_journey(self, customer_journey_content: str, version: str, schema_json: str) -> Dict:
+        """Generate user stories from customer journey content."""
+        user_prompt = self._customer_journey_prompt_template().format(
+            customer_journey_content=customer_journey_content,
             version=version,
             schema_json=schema_json
         )
@@ -567,4 +634,15 @@ BRD Content:
         else:
             data = self.generate_user_stories_json(brd_content, version, schema_json)
         
+        return self.export_to_excel(data, output_path)
+
+    def generate_user_stories_from_customer_journey_excel(
+        self,
+        customer_journey_content: str,
+        version: str,
+        schema_json: str,
+        output_path: str
+    ) -> str:
+        """Generate user stories from customer journey content and export to Excel."""
+        data = self.generate_user_stories_from_customer_journey(customer_journey_content, version, schema_json)
         return self.export_to_excel(data, output_path)
